@@ -17,31 +17,6 @@ _DEAD_RETRY = 30
 _SOCKET_TIMEOUT = 3
 
 
-def set_key_prefix(key_prefix=''):
-
-    def _set_key_prefix(func):
-        """
-        如果类中的函数或方法存在key关键字，就给key的值加上一个前缀
-        :param func:
-        :return:
-        """
-        @wraps(func)
-        def _key_prefix(*args, **kwargs):
-            # 获取函数参数
-            func_params = signature(func).parameters
-            for index, item in enumerate(func_params):
-                if item == 'key' and key_prefix:
-                    if 'key' in kwargs:
-                        kwargs.update({'key': '{0}_{1}'.format(key_prefix, kwargs['key'])})
-                    else:
-                        args = list(args)
-                        args[index] = '{0}_{1}'.format(key_prefix, args[index])
-            return func(*args, **kwargs)
-        return _key_prefix
-
-    return _set_key_prefix
-
-
 class Cache(Client):
 
     """
@@ -63,18 +38,73 @@ class Cache(Client):
             self.servers = servers
             self.key_prefix = key_prefix
 
-        for attr in dir(self):
-            value = getattr(self, attr)
-            if callable(value) \
-                    and not attr.startswith('_') \
-                    and attr not in ('cached', 'delcache'):
-                setattr(self, attr, set_key_prefix(self.key_prefix)(value))
         super().__init__(servers=self.servers, debug=debug, pickleProtocol=pickleProtocol,
                          pickler=pickler, unpickler=unpickler, pload=pload, pid=pid,
                          server_max_key_length=server_max_key_length,
                          server_max_value_length=server_max_value_length, dead_retry=dead_retry,
                          socket_timeout=socket_timeout, cache_cas=cache_cas,
                          flush_on_reconnect=flush_on_reconnect, check_keys=check_keys)
+
+    def get(self, key):
+        key = '{0}_{1}'.format(self.key_prefix, key)
+        return super().get(key)
+
+    def set(self, key, val, time=0, min_compress_len=0):
+        key = '{0}_{1}'.format(self.key_prefix, key)
+        super().set(key, val, time, min_compress_len)
+
+    def delete(self, key, time=0):
+        key = '{0}_{1}'.format(self.key_prefix, key)
+        super().delete(key, time)
+
+    def incr(self, key, delta=1):
+        key = '{0}_{1}'.format(self.key_prefix, key)
+        return super().incr(key=key, delta=delta)
+
+    def decr(self, key, delta=1):
+        key = '{0}_{1}'.format(self.key_prefix, key)
+        return super().decr(key=key, delta=delta)
+
+    def add(self, key, val, time=0, min_compress_len=0):
+        key = '{0}_{1}'.format(self.key_prefix, key)
+        return super().add(key=key, val=val, time=time, min_compress_len=min_compress_len)
+
+    def append(self, key, val, time=0, min_compress_len=0):
+        key = '{0}_{1}'.format(self.key_prefix, key)
+        return super().append(key=key, val=val, time=time, min_compress_len=min_compress_len)
+
+    def prepend(self, key, val, time=0, min_compress_len=0):
+        key = '{0}_{1}'.format(self.key_prefix, key)
+        return super().prepend(key=key, val=val, time=time, min_compress_len=min_compress_len)
+
+    def replace(self, key, val, time=0, min_compress_len=0):
+        key = '{0}_{1}'.format(self.key_prefix, key)
+        return super().replace(key=key, val=val, time=time, min_compress_len=min_compress_len)
+
+    def cas(self, key, val, time=0, min_compress_len=0):
+        key = '{0}_{1}'.format(self.key_prefix, key)
+        return super().cas(key=key, val=val, time=time, min_compress_len=min_compress_len)
+
+    def set_multi(self, mapping, time=0, key_prefix='', min_compress_len=0):
+        # TODO 待测试实现方式是否正确可用
+        if key_prefix == '':
+            key_prefix = self.key_prefix
+        return super().set_multi(mapping=mapping, time=time, key_prefix=key_prefix, min_compress_len=min_compress_len)
+
+    def gets(self, key):
+        key = '{0}_{1}'.format(self.key_prefix, key)
+        return super().gets(key)
+
+    def get_multi(self, keys, key_prefix=''):
+        # TODO 待测试实现方式是否正确可用
+        if key_prefix == '':
+            key_prefix = self.key_prefix
+        super().get_multi(keys, key_prefix=key_prefix)
+
+    def check_key(self, key, key_extra_len=0):
+        key = '{0}_{1}'.format(self.key_prefix, key)
+        super().check_key(key=key, key_extra_len=key_extra_len)
+
 
     def cached(self, key, time_seconds=36000):
         """
