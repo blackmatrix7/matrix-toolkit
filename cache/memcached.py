@@ -8,7 +8,7 @@
 import pickle
 from memcache import Client
 from functools import wraps
-
+from inspect import signature, Parameter
 __author__ = 'blackmatrix'
 
 SERVER_MAX_KEY_LENGTH = 250
@@ -27,24 +27,19 @@ def set_key_prefix(key_prefix=''):
         """
         @wraps(func)
         def _key_prefix(*args, **kwargs):
-            print('装饰器已应用')
+            # 获取函数参数
+            func_params = signature(func).parameters
+            for index, item in enumerate(func_params):
+                if item == 'key' and key_prefix:
+                    if 'key' in kwargs:
+                        kwargs.update({'key': '{0}_{1}'.format(key_prefix, kwargs['key'])})
+                    else:
+                        args = list(args)
+                        args[index] = '{0}_{1}'.format(key_prefix, args[index])
             return func(*args, **kwargs)
         return _key_prefix
 
     return _set_key_prefix
-
-
-class CacheMeta(type):
-
-    def __new__(mcs,  clsname, supers, clsdict):
-        return super().__new__(mcs, clsname, supers, clsdict)
-
-    def __init__(cls, clsname, supers, clsdict):
-        for attr in dir(cls):
-            value = getattr(cls, attr)
-            if callable(value) and not attr.startswith('_'):
-                setattr(cls, attr, set_key_prefix()(value))
-        super().__init__(clsname, supers, clsdict)
 
 
 class Cache(Client):
@@ -70,8 +65,10 @@ class Cache(Client):
 
         for attr in dir(self):
             value = getattr(self, attr)
-            if callable(value) and not attr.startswith('_'):
-                setattr(self, attr, set_key_prefix()(value))
+            if callable(value) \
+                    and not attr.startswith('_') \
+                    and attr not in ('cached', 'delcache'):
+                setattr(self, attr, set_key_prefix(self.key_prefix)(value))
         super().__init__(servers=self.servers, debug=debug, pickleProtocol=pickleProtocol,
                          pickler=pickler, unpickler=unpickler, pload=pload, pid=pid,
                          server_max_key_length=server_max_key_length,
@@ -118,14 +115,22 @@ class Cache(Client):
 if __name__ == '__main__':
     from random import randint
 
-    cache = Cache(servers=[])
+    print('初始化缓存客户端')
+
+    cache = Cache(servers=['121.40.35.131:11211'], key_prefix='hello')
 
     @cache.cached('test_cache')
     def get_random():
         return randint(1, 8)
 
+    print('读取缓存')
+
     print(get_random())
 
+    print('删除缓存')
+
     cache.delete('test_cache')
+
+    print('重新设置缓存')
 
     print(get_random())
