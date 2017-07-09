@@ -17,14 +17,34 @@ _DEAD_RETRY = 30
 _SOCKET_TIMEOUT = 3
 
 
-class CacheMeta(type):
+def set_key_prefix(key_prefix=''):
 
-    @staticmethod
-    def key_prefix(func):
+    def _set_key_prefix(func):
+        """
+        如果类中的函数或方法存在key关键字，就给key的值加上一个前缀
+        :param func:
+        :return:
+        """
         @wraps(func)
         def _key_prefix(*args, **kwargs):
+            print('装饰器已应用')
             return func(*args, **kwargs)
         return _key_prefix
+
+    return _set_key_prefix
+
+
+class CacheMeta(type):
+
+    def __new__(mcs,  clsname, supers, clsdict):
+        return super().__new__(mcs, clsname, supers, clsdict)
+
+    def __init__(cls, clsname, supers, clsdict):
+        for attr in dir(cls):
+            value = getattr(cls, attr)
+            if callable(value) and not attr.startswith('_'):
+                setattr(cls, attr, set_key_prefix()(value))
+        super().__init__(clsname, supers, clsdict)
 
 
 class Cache(Client):
@@ -39,7 +59,7 @@ class Cache(Client):
                  debug=0, pickleProtocol=0, pickler=pickle.Pickler, unpickler=pickle.Unpickler,
                  pload=None, pid=None, server_max_key_length=SERVER_MAX_KEY_LENGTH,
                  server_max_value_length=SERVER_MAX_VALUE_LENGTH, dead_retry=_DEAD_RETRY,
-                 socket_timeout=_SOCKET_TIMEOUT, cache_cas = False, flush_on_reconnect=0,
+                 socket_timeout=_SOCKET_TIMEOUT, cache_cas=False, flush_on_reconnect=0,
                  check_keys=True):
         if config:
             self.servers = config['CACHE_MEMCACHED_SERVERS']
@@ -47,24 +67,17 @@ class Cache(Client):
         else:
             self.servers = servers
             self.key_prefix = key_prefix
+
+        for attr in dir(self):
+            value = getattr(self, attr)
+            if callable(value) and not attr.startswith('_'):
+                setattr(self, attr, set_key_prefix()(value))
         super().__init__(servers=self.servers, debug=debug, pickleProtocol=pickleProtocol,
                          pickler=pickler, unpickler=unpickler, pload=pload, pid=pid,
                          server_max_key_length=server_max_key_length,
                          server_max_value_length=server_max_value_length, dead_retry=dead_retry,
                          socket_timeout=socket_timeout, cache_cas=cache_cas,
                          flush_on_reconnect=flush_on_reconnect, check_keys=check_keys)
-
-    def get(self, key):
-        new_key = '{0}_{1}'.format(self.key_prefix, key)
-        return super().get(new_key)
-
-    def set(self, key, val, time=0, min_compress_len=0):
-        new_key = '{0}_{1}'.format(self.key_prefix, key)
-        super().set(new_key, val, time, min_compress_len)
-
-    def delete(self, key, time=0):
-        new_key = '{0}_{1}'.format(self.key_prefix, key)
-        super().delete(new_key, time)
 
     def cached(self, key, time_seconds=36000):
         """
@@ -103,4 +116,16 @@ class Cache(Client):
 
 
 if __name__ == '__main__':
-    pass
+    from random import randint
+
+    cache = Cache(servers=[])
+
+    @cache.cached('test_cache')
+    def get_random():
+        return randint(1, 8)
+
+    print(get_random())
+
+    cache.delete('test_cache')
+
+    print(get_random())
