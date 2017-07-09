@@ -86,9 +86,7 @@ class Cache(Client):
         return super().cas(key=key, val=val, time=time, min_compress_len=min_compress_len)
 
     def set_multi(self, mapping, time=0, key_prefix='', min_compress_len=0):
-        # TODO 待测试实现方式是否正确可用
-        if key_prefix == '':
-            key_prefix = self.key_prefix
+        # TODO 团队太穷，只有一台memcached服务器，所以这种情况无法测试验证是否正常，留着以后有机会再完成
         return super().set_multi(mapping=mapping, time=time, key_prefix=key_prefix, min_compress_len=min_compress_len)
 
     def gets(self, key):
@@ -96,15 +94,13 @@ class Cache(Client):
         return super().gets(key)
 
     def get_multi(self, keys, key_prefix=''):
-        # TODO 待测试实现方式是否正确可用
-        if key_prefix == '':
-            key_prefix = self.key_prefix
-        super().get_multi(keys, key_prefix=key_prefix)
+        # TODO 团队太穷，只有一台memcached服务器，所以这种情况无法测试验证是否正常，留着以后有机会再完成
+        keys = ['{0}_{1}'.format(self.key_prefix, key) for key in keys]
+        return super().get_multi(keys, key_prefix=key_prefix)
 
     def check_key(self, key, key_extra_len=0):
         key = '{0}_{1}'.format(self.key_prefix, key)
-        super().check_key(key=key, key_extra_len=key_extra_len)
-
+        return super().check_key(key=key, key_extra_len=key_extra_len)
 
     def cached(self, key, time_seconds=36000):
         """
@@ -147,7 +143,7 @@ if __name__ == '__main__':
 
     print('初始化缓存客户端')
 
-    cache = Cache(servers=['121.40.35.131:11211'], key_prefix='hello')
+    cache = Cache(servers=['127.0.0.1:11211'], key_prefix='hello')
 
     @cache.cached('test_cache')
     def get_random():
