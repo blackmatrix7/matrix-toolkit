@@ -205,6 +205,7 @@ if __name__ == '__main__':
     print('只有第一次调用函数时会执行')
     print(get_value(1, 2, 3, 4))
     print(get_value(1, 2,  3, d=4))
+    print(get_value(1, 2, c=3, d=4))
     print(get_value(1, 2, d=4, c=3))
     print(get_value(a=1, b=2, c=3, d=4))
     print(get_value(d=4, c=3, b=2, a=1))
