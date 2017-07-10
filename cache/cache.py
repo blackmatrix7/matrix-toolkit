@@ -6,7 +6,6 @@
 # @File: cache
 # @Software: PyCharm
 import pickle
-import base64
 import hashlib
 from memcache import Client
 from functools import wraps
