@@ -6,9 +6,11 @@
 # @File: cache
 # @Software: PyCharm
 import pickle
+import base64
+import hashlib
 from memcache import Client
 from functools import wraps
-from inspect import signature, Parameter
+from inspect import signature
 __author__ = 'blackmatrix'
 
 SERVER_MAX_KEY_LENGTH = 250
@@ -34,6 +36,7 @@ class Cache(Client):
         if config:
             self.servers = config['CACHE_MEMCACHED_SERVERS']
             self.key_prefix = config['CACHE_KEY_PREFIX']
+            self.debug = config['DEBUG']
         else:
             self.servers = servers
             self.key_prefix = key_prefix
@@ -46,43 +49,43 @@ class Cache(Client):
                          flush_on_reconnect=flush_on_reconnect, check_keys=check_keys)
 
     def get(self, key):
-        key = '{0}_{1}'.format(self.key_prefix, key)
+        key = '{0}{1}'.format(self.key_prefix, key)
         return super().get(key)
 
     def set(self, key, val, time=0, min_compress_len=0):
-        key = '{0}_{1}'.format(self.key_prefix, key)
+        key = '{0}{1}'.format(self.key_prefix, key)
         super().set(key, val, time, min_compress_len)
 
     def delete(self, key, time=0):
-        key = '{0}_{1}'.format(self.key_prefix, key)
+        key = '{0}{1}'.format(self.key_prefix, key)
         super().delete(key, time)
 
     def incr(self, key, delta=1):
-        key = '{0}_{1}'.format(self.key_prefix, key)
+        key = '{0}{1}'.format(self.key_prefix, key)
         return super().incr(key=key, delta=delta)
 
     def decr(self, key, delta=1):
-        key = '{0}_{1}'.format(self.key_prefix, key)
+        key = '{0}{1}'.format(self.key_prefix, key)
         return super().decr(key=key, delta=delta)
 
     def add(self, key, val, time=0, min_compress_len=0):
-        key = '{0}_{1}'.format(self.key_prefix, key)
+        key = '{0}{1}'.format(self.key_prefix, key)
         return super().add(key=key, val=val, time=time, min_compress_len=min_compress_len)
 
     def append(self, key, val, time=0, min_compress_len=0):
-        key = '{0}_{1}'.format(self.key_prefix, key)
+        key = '{0}{1}'.format(self.key_prefix, key)
         return super().append(key=key, val=val, time=time, min_compress_len=min_compress_len)
 
     def prepend(self, key, val, time=0, min_compress_len=0):
-        key = '{0}_{1}'.format(self.key_prefix, key)
+        key = '{0}{1}'.format(self.key_prefix, key)
         return super().prepend(key=key, val=val, time=time, min_compress_len=min_compress_len)
 
     def replace(self, key, val, time=0, min_compress_len=0):
-        key = '{0}_{1}'.format(self.key_prefix, key)
+        key = '{0}{1}'.format(self.key_prefix, key)
         return super().replace(key=key, val=val, time=time, min_compress_len=min_compress_len)
 
     def cas(self, key, val, time=0, min_compress_len=0):
-        key = '{0}_{1}'.format(self.key_prefix, key)
+        key = '{0}{1}'.format(self.key_prefix, key)
         return super().cas(key=key, val=val, time=time, min_compress_len=min_compress_len)
 
     def set_multi(self, mapping, time=0, key_prefix='', min_compress_len=0):
@@ -90,17 +93,36 @@ class Cache(Client):
         return super().set_multi(mapping=mapping, time=time, key_prefix=key_prefix, min_compress_len=min_compress_len)
 
     def gets(self, key):
-        key = '{0}_{1}'.format(self.key_prefix, key)
+        key = '{0}{1}'.format(self.key_prefix, key)
         return super().gets(key)
 
     def get_multi(self, keys, key_prefix=''):
         # TODO 团队太穷，只有一台memcached服务器，所以这种情况无法测试验证是否正常，留着以后有机会再完成
-        keys = ['{0}_{1}'.format(self.key_prefix, key) for key in keys]
+        keys = ['{0}{1}'.format(self.key_prefix, key) for key in keys]
         return super().get_multi(keys, key_prefix=key_prefix)
 
     def check_key(self, key, key_extra_len=0):
-        key = '{0}_{1}'.format(self.key_prefix, key)
+        key = '{0}{1}'.format(self.key_prefix, key)
         return super().check_key(key=key, key_extra_len=key_extra_len)
+
+    @staticmethod
+    def _create_args_sig(func, params,  *args,  **kwargs):
+        # 函数名称
+        func_name = func.__name__ if callable(func) else func
+        args_count = len(args)
+        # 复制一份函数参数列表，避免对外部数据的修改
+        args = list(args)
+        # 将 POSITIONAL_OR_KEYWORD 的参数转换成 k/w 的形式
+        if args:
+            for index, (key, value) in enumerate(params.items()):
+                if str(value.kind) == 'POSITIONAL_OR_KEYWORD':
+                    if index < args_count:
+                        kwargs.update({key: args.pop(0)})
+        # 对参数进行排序
+        args.extend(({k: kwargs[k]} for k in sorted(kwargs.keys())))
+        func_args = '{0}{1}'.format(func_name, args)
+        args_sig = hashlib.sha256(func_args.encode()).hexdigest()
+        return args_sig
 
     def cached(self, key, time_seconds=36000):
         """
@@ -112,12 +134,25 @@ class Cache(Client):
         def _cached(func):
             @wraps(func)
             def wrapper(*args, **kwargs):
-                args_cache = self.get(key)
-                if args_cache:
-                    return args_cache
+                # 获取函数签名
+                func_sig = signature(func)
+                # 获取函数参数
+                func_params = func_sig.parameters
+                # 获取函数参数签名
+                args_sig = self._create_args_sig(func, func_params, *args, **kwargs)
+                # 从缓存里获取数据
+                func_cache = self.get(key) or {}
+                # 通过函数签名判断函数是否被进行过修改, 如果进行过修改，不能读取缓存的数据
+                if func_cache and 'func_sig' in func_cache and func_cache.get('func_sig') == func_sig:
+                    result = func_cache.get(args_sig)
+                    return result
                 else:
                     result = func(*args, **kwargs)
-                    self.set(key=key, val=result, time=time_seconds)
+                    # 保存函数签名
+                    func_cache.update({'func_sig': func_sig})
+                    # 保存函数执行结果
+                    func_cache.update({args_sig: result})
+                    self.set(key=key, val=func_cache, time=time_seconds)
                     return result
             return wrapper
         return _cached
@@ -147,16 +182,32 @@ if __name__ == '__main__':
 
     @cache.cached('test_cache')
     def get_random():
-        return randint(1, 8)
+        return randint(1, 999)
 
-    print('读取缓存')
-
+    print('调用函数并将结果缓存')
+    print(get_random())
+    print('再调用两次也是同样的值')
+    print(get_random())
+    print(get_random())
+    # print('删除缓存')
+    # cache.delete('test_cache')
+    # print('重新调用函数，值变化')
     print(get_random())
 
-    print('删除缓存')
+    @cache.cached('test_value')
+    def get_value(a, b, c, d, *args):
+        # 相同的参数，只有第一次被执行！
+        print('函数 get_value 被执行！')
+        return a, b, c, d, args
 
-    cache.delete('test_cache')
+    class Spam:
+        pass
 
-    print('重新设置缓存')
+    print('只有第一次调用函数时会执行')
+    print(get_value(1, 2, 3, 4))
+    print(get_value(1, 2,  3, d=4))
+    print(get_value(1, 2, d=4, c=3))
+    print(get_value(a=1, b=2, c=3, d=4))
+    print(get_value(d=4, c=3, b=2, a=1))
+    cache.delete('test_value')
 
-    print(get_random())
