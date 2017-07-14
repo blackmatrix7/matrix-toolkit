@@ -35,7 +35,8 @@ class HuaWeiPush(IPush):
 
     # 读取连接配置
     def __init__(self, app_id, app_secret, ver='1',
-                 token_url='https://login.vmall.com/oauth2/token', push_url='https://api.push.hicloud.com/pushsend.do'):
+                 token_url='https://login.vmall.com/oauth2/token',
+                 push_url='https://api.push.hicloud.com/pushsend.do'):
         self.ver = ver
         self.app_id = app_id
         self.app_secret = app_secret
@@ -46,6 +47,12 @@ class HuaWeiPush(IPush):
     @property
     @cache.cached(time_seconds=432000, key='hw_token')
     def token(self):
+        """
+        获取华为推送的token，并利用缓存机制管理token。
+        缓存的有效期需要设置得比token的有效期短，当无法从缓存读取token时，
+        则执行函数，获取新的token，并且重新进行缓存。
+        :return:
+        """
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
         resp = WebRequests.requests(method='post', headers=headers,
                                     url=self.token_url,
@@ -58,7 +65,7 @@ class HuaWeiPush(IPush):
     # 消息推送
     def push(self, targets, title, content, settings=None):
         """
-        华为消息推送实现
+        华为推送消息实现
         :param targets: 推送的目标设备 token
         :param title: 推送的标题
         :param content: 推送的内容
@@ -115,6 +122,12 @@ class HuaWeiPush(IPush):
         return resp
 
     def push_raw_json(self, payload, targets):
+        """
+
+        :param payload:
+        :param targets:
+        :return:
+        """
         # 华为推送接口请求参数
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
         nsp_ctx = '{{"ver":"{0}", "appId":"{1}"}}'.format(self.ver, self.app_id)
