@@ -62,6 +62,11 @@ class HuaWeiPush(IPush):
         print(resp)
         return resp.get('access_token') if resp else None
 
+    @token.deleter
+    @cache.delcache(key='hw_token')
+    def token(self):
+        pass
+
     # 消息推送
     def push(self, targets, title, content, settings=None):
         """
