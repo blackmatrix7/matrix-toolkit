@@ -117,13 +117,13 @@ class Cache(Client):
                         kwargs.update({key: args.pop(0)})
         # 对参数进行排序
         args.extend(({k: kwargs[k]} for k in sorted(kwargs.keys())))
-        func_args = '{0}{1}'.format(func_name, args)
+        func_args = '{0}{1}'.format(func_name, pickle.dumps(args))
         args_sig = hashlib.sha256(func_args.encode()).hexdigest()
         return args_sig
 
     def cached(self, key, timeout=36000):
         """
-        函数装饰器，装饰到无参数的函数上时，会优先返回缓存的值
+        函数装饰器，装饰到函数上时，会优先返回缓存的值
         :param key:
         :param timeout:
         :return:
@@ -197,6 +197,10 @@ if __name__ == '__main__':
         print('函数 get_value 被执行！')
         return a, b, c, d, args
 
+    @cache.cached('test_list')
+    def get_list(alist):
+        return [item for item in alist]
+
     class Spam:
         pass
 
@@ -208,3 +212,9 @@ if __name__ == '__main__':
     print(get_value(a=1, b=2, c=3, d=4))
     print(get_value(d=4, c=3, b=2, a=1))
     cache.delete('test_value')
+
+    print(get_list(['a', '2', {'a': 1}, 4, [1], ('b', ), Spam()]))
+    print(get_list(['a', '2', {'a': 1}, 4, [1], ('b', ), Spam()]))
+
+
+
