@@ -123,11 +123,11 @@ class Cache(Client):
         args_sig = hashlib.sha256(func_args.encode()).hexdigest()
         return args_sig
 
-    def cached(self, key, time_seconds=36000):
+    def cached(self, key, timeout=36000):
         """
         函数装饰器，装饰到无参数的函数上时，会优先返回缓存的值
         :param key:
-        :param time_seconds:
+        :param timeout:
         :return:
         """
         def _cached(func):
@@ -151,7 +151,7 @@ class Cache(Client):
                     func_cache.update({'func_sig': func_sig})
                     # 保存函数执行结果
                     func_cache.update({args_sig: result})
-                    self.set(key=key, val=func_cache, time=time_seconds)
+                    self.set(key=key, val=func_cache, time=timeout)
                     return result
             return wrapper
         return _cached
@@ -165,9 +165,13 @@ class Cache(Client):
         def _delcache(func):
             @wraps(func)
             def wrapper(*args, **kwargs):
-                result = func(*args, **kwargs)
-                self.delete(key)
-                return result
+                try:
+                    result = func(*args, **kwargs)
+                    return result
+                except Exception as ex:
+                    raise ex
+                finally:
+                    self.delete(key)
             return wrapper
         return _delcache
 
@@ -210,4 +214,3 @@ if __name__ == '__main__':
     print(get_value(a=1, b=2, c=3, d=4))
     print(get_value(d=4, c=3, b=2, a=1))
     cache.delete('test_value')
-
