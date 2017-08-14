@@ -121,19 +121,6 @@ class Cache(Client):
         args_sig = hashlib.sha256(func_args.encode()).hexdigest()
         return args_sig
 
-    def _get_func_cache(self, key: str, args_sig: str):
-        """
-        从缓存中获取函数的执行结果
-        :param key: 缓存 key
-        :param args_sig: 计算函数实参得到的签名
-        :return:
-        """
-        # 从缓存里获取数据
-        func_cache = self.get(key) or {}
-        # 通过函数签名判断函数是否被进行过修改, 如果进行过修改，不能读取缓存的数据
-        result = func_cache.get(args_sig)
-        return func_cache, result
-
     def cached(self, key, timeout=36000):
         """
         函数装饰器，装饰到函数上时，会优先返回缓存的值
@@ -144,11 +131,14 @@ class Cache(Client):
         def _cached(func):
             @wraps(func)
             def wrapper(*args, **kwargs):
-                # 获取函数形参
+                # 获取函数参数
                 func_params = signature(func).parameters
-                # 获取函数实参，并生成签名
+                # 获取函数参数签名
                 args_sig = self._create_args_sig(func, func_params, *args, **kwargs)
-                func_cache, result = args.get_func_cache(key=key, args_sig=args_sig)
+                # 从缓存里获取数据
+                func_cache = self.get(key) or {}
+                # 通过函数签名判断函数是否被进行过修改, 如果进行过修改，不能读取缓存的数据
+                result = func_cache.get(args_sig)
                 if result:
                     return result
                 else:
@@ -157,7 +147,6 @@ class Cache(Client):
                     func_cache.update({args_sig: result})
                     self.set(key=key, val=func_cache, time=timeout)
                     return result
-
             return wrapper
         return _cached
 
