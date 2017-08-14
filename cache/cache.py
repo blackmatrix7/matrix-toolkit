@@ -88,7 +88,6 @@ class Cache(Client):
         return super().cas(key=key, val=val, time=time, min_compress_len=min_compress_len)
 
     def set_multi(self, mapping, time=0, key_prefix='', min_compress_len=0):
-        # TODO 团队太穷，只有一台memcached服务器，所以这种情况无法测试验证是否正常，留着以后有机会再完成
         return super().set_multi(mapping=mapping, time=time, key_prefix=key_prefix, min_compress_len=min_compress_len)
 
     def gets(self, key):
@@ -96,7 +95,6 @@ class Cache(Client):
         return super().gets(key)
 
     def get_multi(self, keys, key_prefix=''):
-        # TODO 团队太穷，只有一台memcached服务器，所以这种情况无法测试验证是否正常，留着以后有机会再完成
         keys = ['{0}{1}'.format(self.key_prefix, key) for key in keys]
         return super().get_multi(keys, key_prefix=key_prefix)
 
@@ -133,22 +131,18 @@ class Cache(Client):
         def _cached(func):
             @wraps(func)
             def wrapper(*args, **kwargs):
-                # 获取函数签名
-                func_sig = signature(func)
                 # 获取函数参数
-                func_params = func_sig.parameters
+                func_params = signature(func).parameters
                 # 获取函数参数签名
                 args_sig = self._create_args_sig(func, func_params, *args, **kwargs)
                 # 从缓存里获取数据
                 func_cache = self.get(key) or {}
                 # 通过函数签名判断函数是否被进行过修改, 如果进行过修改，不能读取缓存的数据
-                if func_cache and 'func_sig' in func_cache and func_cache.get('func_sig') == func_sig:
-                    result = func_cache.get(args_sig)
+                result = func_cache.get(args_sig)
+                if result:
                     return result
                 else:
                     result = func(*args, **kwargs)
-                    # 保存函数签名
-                    func_cache.update({'func_sig': func_sig})
                     # 保存函数执行结果
                     func_cache.update({args_sig: result})
                     self.set(key=key, val=func_cache, time=timeout)
