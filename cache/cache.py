@@ -145,7 +145,7 @@ class Cache(Client):
                 # 获取缓存中的双端队列
                 queue = func_cache.get('queue', deque())
                 # 超出限制大小则删除最早的缓存
-                if len(queue) >= maxsize:
+                if len(queue) >= maxsize and args_sig not in queue:
                     del_key = queue.popleft()
                     if del_key in func_cache:
                         del func_cache[del_key]
@@ -244,6 +244,10 @@ if __name__ == '__main__':
     print(test_lru(4))
     print(test_lru(5))
     print(test_lru(1))
+    print(test_lru(1))
+    print(test_lru(1))
+    print(test_lru(5))
+    print(test_lru(4))
 
 
 
