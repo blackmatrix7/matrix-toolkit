@@ -9,6 +9,7 @@ import pickle
 import hashlib
 from memcache import Client
 from functools import wraps
+from collections import deque
 from inspect import signature
 __author__ = 'blackmatrix'
 
@@ -16,6 +17,7 @@ SERVER_MAX_KEY_LENGTH = 250
 SERVER_MAX_VALUE_LENGTH = 1024*1024
 _DEAD_RETRY = 30
 _SOCKET_TIMEOUT = 3
+_NO_VALUE = object()
 
 
 class Cache(Client):
@@ -121,11 +123,12 @@ class Cache(Client):
         args_sig = hashlib.sha256(func_args.encode()).hexdigest()
         return args_sig
 
-    def cached(self, key, timeout=36000):
+    def cached(self, key, timeout=36000, maxsize=20):
         """
         函数装饰器，装饰到函数上时，会优先返回缓存的值
         :param key:
         :param timeout:
+        :param maxsize:
         :return:
         """
         def _cached(func):
@@ -133,20 +136,29 @@ class Cache(Client):
             def wrapper(*args, **kwargs):
                 # 获取函数参数
                 func_params = signature(func).parameters
-                # 获取函数参数签名
+                # 获取函数参数并创建签名
                 args_sig = self._create_args_sig(func, func_params, *args, **kwargs)
                 # 从缓存里获取数据
                 func_cache = self.get(key) or {}
                 # 通过函数签名判断函数是否被进行过修改, 如果进行过修改，不能读取缓存的数据
-                result = func_cache.get(args_sig)
-                if result:
-                    return result
-                else:
+                result = func_cache.get(args_sig, _NO_VALUE)
+                # 获取缓存中的双端队列
+                queue = func_cache.get('queue', deque())
+                # 超出限制大小则删除最早的缓存
+                if len(queue) >= maxsize:
+                    del_key = queue.popleft()
+                    if del_key in func_cache:
+                        del func_cache[del_key]
+                if args_sig in queue:
+                    queue.remove(args_sig)
+                queue.append(args_sig)
+                func_cache.update({'queue': queue})
+                if result == _NO_VALUE:
                     result = func(*args, **kwargs)
                     # 保存函数执行结果
                     func_cache.update({args_sig: result})
-                    self.set(key=key, val=func_cache, time=timeout)
-                    return result
+                self.set(key=key, val=func_cache, time=timeout)
+                return result
             return wrapper
         return _cached
 
@@ -175,46 +187,66 @@ if __name__ == '__main__':
 
     print('初始化缓存客户端')
 
-    cache = Cache(servers=['127.0.0.1:11211'], key_prefix='hello')
+    cache = Cache(servers=['121.40.35.131:11211'], key_prefix='hello')
 
-    @cache.cached('test_cache')
-    def get_random():
-        return randint(1, 999)
-
-    print('调用函数并将结果缓存')
-    print(get_random())
-    print('再调用两次也是同样的值')
-    print(get_random())
-    print(get_random())
+    # @cache.cached('test_cache')
+    # def get_random():
+    #     return randint(1, 999)
+    #
+    # print('调用函数并将结果缓存')
+    # print(get_random())
+    # print('再调用三次也是同样的值')
+    # print(get_random())
+    # print(get_random())
+    # print(get_random())
     # print('删除缓存')
     # cache.delete('test_cache')
     # print('重新调用函数，值变化')
-    print(get_random())
+    # print(get_random())
+    #
+    # @cache.cached('test_value')
+    # def get_value(a, b, c, d, *args):
+    #     # 相同的参数，只有第一次被执行！
+    #     print('函数 get_value 被执行！')
+    #     return a, b, c, d, args
+    #
+    # @cache.cached('test_list')
+    # def get_list(alist):
+    #     return [item for item in alist]
+    #
+    # class Spam:
+    #     pass
+    #
+    # print('只有第一次调用函数时会执行')
+    # print(get_value(1, 2, 3, 4))
+    # print(get_value(1, 2,  3, d=4))
+    # print(get_value(1, 2, c=3, d=4))
+    # print(get_value(1, 2, d=4, c=3))
+    # print(get_value(a=1, b=2, c=3, d=4))
+    # print(get_value(d=4, c=3, b=2, a=1))
+    # cache.delete('test_value')
+    #
+    # print(get_list(['a', '2', {'a': 1}, 4, [1], ('b', ), Spam()]))
+    # print(get_list(['a', '2', {'a': 1}, 4, [1], ('b', ), Spam()]))
+    # print(get_list(['b', '3', {'c': 2}, 5, [2], ('c', ), Spam]))
 
-    @cache.cached('test_value')
-    def get_value(a, b, c, d, *args):
-        # 相同的参数，只有第一次被执行！
-        print('函数 get_value 被执行！')
-        return a, b, c, d, args
+    @cache.cached('test_lru', maxsize=2)
+    def test_lru(a):
+        print('函数被执行')
+        return a
 
-    @cache.cached('test_list')
-    def get_list(alist):
-        return [item for item in alist]
+    print(test_lru(1))
+    print(test_lru(2))
+    print(test_lru(1))
+    print(test_lru(1))
+    print(test_lru(1))
+    print(test_lru(1))
+    print(test_lru(4))
+    print(test_lru(5))
+    print(test_lru(1))
 
-    class Spam:
-        pass
 
-    print('只有第一次调用函数时会执行')
-    print(get_value(1, 2, 3, 4))
-    print(get_value(1, 2,  3, d=4))
-    print(get_value(1, 2, c=3, d=4))
-    print(get_value(1, 2, d=4, c=3))
-    print(get_value(a=1, b=2, c=3, d=4))
-    print(get_value(d=4, c=3, b=2, a=1))
-    cache.delete('test_value')
 
-    print(get_list(['a', '2', {'a': 1}, 4, [1], ('b', ), Spam()]))
-    print(get_list(['a', '2', {'a': 1}, 4, [1], ('b', ), Spam()]))
 
 
 
