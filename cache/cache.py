@@ -36,14 +36,15 @@ class Cache(Client):
                  socket_timeout=_SOCKET_TIMEOUT, cache_cas=False, flush_on_reconnect=0,
                  check_keys=True):
         if config:
-            self.servers = config['CACHE_MEMCACHED_SERVERS']
-            self.key_prefix = config['CACHE_KEY_PREFIX']
             self.debug = config['DEBUG']
+            self.key_prefix = config['CACHE_KEY_PREFIX']
+            self.servers = config['CACHE_MEMCACHED_SERVERS']
         else:
-            self.servers = servers
+            self.debug = debug
             self.key_prefix = key_prefix
+            self.servers = servers
 
-        super().__init__(servers=self.servers, debug=debug, pickleProtocol=pickleProtocol,
+        super().__init__(servers=self.servers, debug=self.debug, pickleProtocol=pickleProtocol,
                          pickler=pickler, unpickler=unpickler, pload=pload, pid=pid,
                          server_max_key_length=server_max_key_length,
                          server_max_value_length=server_max_value_length, dead_retry=dead_retry,
