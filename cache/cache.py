@@ -7,12 +7,10 @@
 # @Software: PyCharm
 import pickle
 import hashlib
-import unittest
 from memcache import Client
 from functools import wraps
 from inspect import signature
-from config import current_config
-from collections import deque, OrderedDict
+from collections import OrderedDict
 
 __author__ = 'blackmatrix'
 
