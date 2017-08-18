@@ -38,7 +38,7 @@ class BaseConfig(ConfigMixin):
 class DefaultConfig(BaseConfig):
 
     # DEBUG
-    DEBUG = True
+    DEBUG = False
 
     # Cache
     CACHE_MEMCACHED_SERVERS = ['127.0.0.1:11211']

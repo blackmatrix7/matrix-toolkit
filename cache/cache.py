@@ -106,22 +106,25 @@ class Cache(Client):
 
     @staticmethod
     def _create_args_sig(func, params,  *args,  **kwargs):
-        # 函数名称
-        func_name = func.__name__ if callable(func) else func
-        args_count = len(args)
-        # 复制一份函数参数列表，避免对外部数据的修改
-        args = list(args)
-        # 将 POSITIONAL_OR_KEYWORD 的参数转换成 k/w 的形式
-        if args:
-            for index, (key, value) in enumerate(params.items()):
-                if str(value.kind) == 'POSITIONAL_OR_KEYWORD':
-                    if index < args_count:
-                        kwargs.update({key: args.pop(0)})
-        # 对参数进行排序
-        args.extend(({k: kwargs[k]} for k in sorted(kwargs.keys())))
-        func_args = '{0}{1}'.format(func_name, pickle.dumps(args))
-        args_sig = hashlib.sha256(func_args.encode()).hexdigest()
-        return args_sig
+        args_sig = None
+        try:
+            # 函数名称
+            func_name = func.__name__ if callable(func) else func
+            args_count = len(args)
+            # 复制一份函数参数列表，避免对外部数据的修改
+            args = list(args)
+            # 将 POSITIONAL_OR_KEYWORD 的参数转换成 k/w 的形式
+            if args:
+                for index, (key, value) in enumerate(params.items()):
+                    if str(value.kind) == 'POSITIONAL_OR_KEYWORD':
+                        if index < args_count:
+                            kwargs.update({key: args.pop(0)})
+            # 对参数进行排序
+            args.extend(({k: kwargs[k]} for k in sorted(kwargs.keys())))
+            func_args = '{0}{1}'.format(func_name, pickle.dumps(args))
+            args_sig = hashlib.sha256(func_args.encode()).hexdigest()
+        finally:
+            return args_sig
 
     def cached(self, key, timeout=36000, maxsize=30):
         """
@@ -140,14 +143,14 @@ class Cache(Client):
                 args_sig = self._create_args_sig(func, func_params, *args, **kwargs)
                 # 从缓存里获取数据
                 func_cache = self.get(key) or OrderedDict()
-                # 通过函数签名判断函数是否被进行过修改, 如果进行过修改，不能读取缓存的数据
+                # 将签名作为key，读取缓存中的函数执行结果
                 result = func_cache.get(args_sig, _NO_VALUE)
                 # 超出限制大小则删除最早的缓存，统计大小时需要排除lru这个key
                 if len(func_cache) >= maxsize and args_sig not in func_cache:
                     func_cache.popitem(last=False)
                 if args_sig in func_cache:
                     func_cache.move_to_end(args_sig)
-                if result == _NO_VALUE:
+                if args_sig is None or result == _NO_VALUE:
                     result = func(*args, **kwargs)
                     # 保存函数执行结果
                     func_cache.update({args_sig: result})
