@@ -7,6 +7,7 @@
 # @Software: PyCharm
 import pickle
 import hashlib
+import unittest
 from memcache import Client
 from functools import wraps
 from config import current_config
@@ -178,76 +179,73 @@ class Cache(Client):
 
 
 if __name__ == '__main__':
-    
-    from random import randint
+    pass
 
-    print('初始化缓存客户端')
-
-    cache = Cache(config=current_config)
-
-    @cache.cached('test_cache')
-    def get_random():
-        return randint(1, 999)
-
-    print('调用函数并将结果缓存')
-    print(get_random())
-    print('再调用三次也是同样的值')
-    print(get_random())
-    print(get_random())
-    print(get_random())
-    print('删除缓存')
-    cache.delete('test_cache')
-    print('重新调用函数，值变化')
-    print(get_random())
-
-    @cache.cached('test_value')
-    def get_value(a, b, c, d, *args):
-        # 相同的参数，只有第一次被执行！
-        print('函数 get_value 被执行！')
-        return a, b, c, d, args
-
-    @cache.cached('test_list')
-    def get_list(alist):
-        return [item for item in alist]
-
-    class Spam:
-        pass
-
-    print('只有第一次调用函数时会执行')
-    print(get_value(1, 2, 3, 4))
-    print(get_value(1, 2,  3, d=4))
-    print(get_value(1, 2, c=3, d=4))
-    print(get_value(1, 2, d=4, c=3))
-    print(get_value(a=1, b=2, c=3, d=4))
-    print(get_value(d=4, c=3, b=2, a=1))
-    cache.delete('test_value')
-
-    print(get_list(['a', '2', {'a': 1}, 4, [1], ('b', ), Spam()]))
-    print(get_list(['a', '2', {'a': 1}, 4, [1], ('b', ), Spam()]))
-    print(get_list(['b', '3', {'c': 2}, 5, [2], ('c', ), Spam]))
-
-    @cache.cached('test_lru', maxsize=2)
-    def test_lru(a):
-        print('函数被执行')
-        return a
-
-    cache.delete('test_lru')
-    print(test_lru(1))
-    print(test_lru(2))
-    print(test_lru(1))
-    print(test_lru(1))
-    print(test_lru(1))
-    print(test_lru(1))
-    print(test_lru(4))
-    print(test_lru(1))
-    print(test_lru(2))
-    print(test_lru(5))
-    print(test_lru(1))
-    print(test_lru(1))
-    print(test_lru(1))
-    print(test_lru(5))
-    print(test_lru(4))
-    cache.delete('test_lru')
+    # from random import randint
+    #
+    # print('初始化缓存客户端')
+    #
+    # cache = Cache(config=current_config)
+    #
+    # print('调用函数并将结果缓存')
+    # print(get_random())
+    # print('再调用三次也是同样的值')
+    # print(get_random())
+    # print(get_random())
+    # print(get_random())
+    # print('删除缓存')
+    # cache.delete('test_cache')
+    # print('重新调用函数，值变化')
+    # print(get_random())
+    #
+    # @cache.cached('test_value')
+    # def get_value(a, b, c, d, *args):
+    #     # 相同的参数，只有第一次被执行！
+    #     print('函数 get_value 被执行！')
+    #     return a, b, c, d, args
+    #
+    # @cache.cached('test_list')
+    # def get_list(alist):
+    #     return [item for item in alist]
+    #
+    # class Spam:
+    #     pass
+    #
+    # print('只有第一次调用函数时会执行')
+    # print(get_value(1, 2, 3, 4))
+    # print(get_value(1, 2,  3, d=4))
+    # print(get_value(1, 2, c=3, d=4))
+    # print(get_value(1, 2, d=4, c=3))
+    # print(get_value(a=1, b=2, c=3, d=4))
+    # print(get_value(d=4, c=3, b=2, a=1))
+    # cache.delete('test_value')
+    #
+    # print(get_list(['a', '2', {'a': 1}, 4, [1], ('b', ), Spam()]))
+    # print(get_list(['a', '2', {'a': 1}, 4, [1], ('b', ), Spam()]))
+    # print(get_list(['b', '3', {'c': 2}, 5, [2], ('c', ), Spam]))
+    #
+    # @cache.cached('test_lru', maxsize=2)
+    # def test_lru(a):
+    #     print('函数被执行')
+    #     return a
+    #
+    # cache.delete('test_lru')
+    # print(test_lru(1))
+    # print(test_lru(2))
+    # print(test_lru(1))
+    # print(test_lru(1))
+    # print(test_lru(1))
+    # print(test_lru(1))
+    # print(test_lru(4))
+    # print(test_lru(1))
+    # print(test_lru(2))
+    # print(test_lru(5))
+    # print(test_lru(1))
+    # print(test_lru(1))
+    # print(test_lru(1))
+    # print(test_lru(5))
+    # print(test_lru(4))
+    # cache.delete('test_lru')
 
 
 
