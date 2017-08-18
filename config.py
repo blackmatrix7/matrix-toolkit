@@ -12,6 +12,9 @@ __author__ = 'blackmatrix'
 
 class ConfigMixin:
 
+    def __setattr__(self, key, value):
+        raise AttributeError
+
     def __setitem__(self, key, value):
         raise AttributeError
 
@@ -22,10 +25,10 @@ class ConfigMixin:
         return getattr(self, item)
 
     def __iter__(self):
-        yield from {k: getattr(self, k, None) for k in dir(self) if k.upper() == k}.items()
+        yield from (k for k in dir(self) if k.upper() == k)
 
     def items(self):
-        return self
+        yield from {k: getattr(self, k, None) for k in dir(self) if k.upper() == k}.items()
 
     def get(self, item, value=None):
         return getattr(self, item, value)
