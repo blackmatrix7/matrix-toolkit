@@ -24,27 +24,25 @@ _NO_VALUE = object()
 class Cache(Client):
 
     """
-    一个基于Python3-Memcached的简单缓存操作类
-    主要解决的是当不同的环境使用同一memcached服务器时，
-    带来的数据竞态问题。
+    基于Python3-Memcached轻度封装的缓存操作类
     """
 
     def __init__(self, *, config=None, servers: list = None, key_prefix: str='',
-                 debug=0, pickleProtocol=0, pickler=pickle.Pickler, unpickler=pickle.Unpickler,
+                 debug=False, pickle_protocol=0, pickler=pickle.Pickler, unpickler=pickle.Unpickler,
                  pload=None, pid=None, server_max_key_length=SERVER_MAX_KEY_LENGTH,
                  server_max_value_length=SERVER_MAX_VALUE_LENGTH, dead_retry=_DEAD_RETRY,
                  socket_timeout=_SOCKET_TIMEOUT, cache_cas=False, flush_on_reconnect=0,
                  check_keys=True):
         if config:
-            self.debug = config['DEBUG']
-            self.key_prefix = config['CACHE_KEY_PREFIX']
+            self.debug = config.get('DEBUG', False)
+            self.key_prefix = config.get('CACHE_KEY_PREFIX', '')
             self.servers = config['CACHE_MEMCACHED_SERVERS']
         else:
             self.debug = debug
             self.key_prefix = key_prefix
             self.servers = servers
 
-        super().__init__(servers=self.servers, debug=self.debug, pickleProtocol=pickleProtocol,
+        super().__init__(servers=self.servers, debug=self.debug, pickleProtocol=pickle_protocol,
                          pickler=pickler, unpickler=unpickler, pload=pload, pid=pid,
                          server_max_key_length=server_max_key_length,
                          server_max_value_length=server_max_value_length, dead_retry=dead_retry,
@@ -125,12 +123,12 @@ class Cache(Client):
         args_sig = hashlib.sha256(func_args.encode()).hexdigest()
         return args_sig
 
-    def cached(self, key, timeout=36000, maxsize=20):
+    def cached(self, key, timeout=36000, maxsize=30):
         """
         函数装饰器，装饰到函数上时，会优先返回缓存的值
-        :param key:
-        :param timeout:
-        :param maxsize:
+        :param key: memcached key
+        :param timeout: 超时时间，单位秒
+        :param maxsize: 最多缓存的数量，因为每次不同参数的函数调用都会生成对应的缓存，控制数量避免占用过多内存
         :return:
         """
         def _cached(func):
