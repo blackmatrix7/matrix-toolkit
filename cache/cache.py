@@ -9,6 +9,7 @@ import pickle
 import hashlib
 from memcache import Client
 from functools import wraps
+from config import current_config
 from collections import deque, OrderedDict
 from inspect import signature
 __author__ = 'blackmatrix'
@@ -177,11 +178,12 @@ class Cache(Client):
 
 
 if __name__ == '__main__':
+    
     from random import randint
 
     print('初始化缓存客户端')
 
-    cache = Cache(servers=['127.0.0.1:11211'], key_prefix='hello')
+    cache = Cache(config=current_config)
 
     @cache.cached('test_cache')
     def get_random():
@@ -230,7 +232,6 @@ if __name__ == '__main__':
         return a
 
     cache.delete('test_lru')
-
     print(test_lru(1))
     print(test_lru(2))
     print(test_lru(1))
@@ -246,7 +247,6 @@ if __name__ == '__main__':
     print(test_lru(1))
     print(test_lru(5))
     print(test_lru(4))
-
     cache.delete('test_lru')
 
 
