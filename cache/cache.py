@@ -100,6 +100,10 @@ class Cache(Client):
         keys = ['{0}{1}'.format(self.key_prefix, key) for key in keys]
         return super().get_multi(keys, key_prefix=key_prefix)
 
+    def delete_multi(self, keys, time=0, key_prefix=''):
+        keys = ['{0}{1}'.format(self.key_prefix, key) for key in keys]
+        return super().delete_multi(keys=keys, time=time, key_prefix=key_prefix)
+
     def check_key(self, key, key_extra_len=0):
         key = '{0}{1}'.format(self.key_prefix, key)
         return super().check_key(key=key, key_extra_len=key_extra_len)
