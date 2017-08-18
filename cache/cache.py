@@ -9,7 +9,7 @@ import pickle
 import hashlib
 from memcache import Client
 from functools import wraps
-from collections import deque
+from collections import deque, OrderedDict
 from inspect import signature
 __author__ = 'blackmatrix'
 
@@ -139,20 +139,14 @@ class Cache(Client):
                 # 获取函数参数并创建签名
                 args_sig = self._create_args_sig(func, func_params, *args, **kwargs)
                 # 从缓存里获取数据
-                func_cache = self.get(key) or {}
+                func_cache = self.get(key) or OrderedDict()
                 # 通过函数签名判断函数是否被进行过修改, 如果进行过修改，不能读取缓存的数据
                 result = func_cache.get(args_sig, _NO_VALUE)
-                # 获取缓存中的双端队列
-                queue = func_cache.get('queue', deque())
-                # 超出限制大小则删除最早的缓存
-                if len(queue) >= maxsize and args_sig not in queue:
-                    del_key = queue.popleft()
-                    if del_key in func_cache:
-                        del func_cache[del_key]
-                if args_sig in queue:
-                    queue.remove(args_sig)
-                queue.append(args_sig)
-                func_cache.update({'queue': queue})
+                # 超出限制大小则删除最早的缓存，统计大小时需要排除lru这个key
+                if len(func_cache) >= maxsize and args_sig not in func_cache:
+                    func_cache.popitem(last=False)
+                if args_sig in func_cache:
+                    func_cache.move_to_end(args_sig)
                 if result == _NO_VALUE:
                     result = func(*args, **kwargs)
                     # 保存函数执行结果
@@ -235,6 +229,8 @@ if __name__ == '__main__':
         print('函数被执行')
         return a
 
+    cache.delete('test_lru')
+
     print(test_lru(1))
     print(test_lru(2))
     print(test_lru(1))
@@ -242,12 +238,16 @@ if __name__ == '__main__':
     print(test_lru(1))
     print(test_lru(1))
     print(test_lru(4))
+    print(test_lru(1))
+    print(test_lru(2))
     print(test_lru(5))
     print(test_lru(1))
     print(test_lru(1))
     print(test_lru(1))
     print(test_lru(5))
     print(test_lru(4))
+
+    cache.delete('test_lru')
 
 
 
