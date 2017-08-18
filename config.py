@@ -56,7 +56,7 @@ class DefaultConfig(BaseConfig):
 
     # Cache
     CACHE_MEMCACHED_SERVERS = ['127.0.0.1:11211']
-    CACHE_KEY_PREFIX = 'default'
+    CACHE_KEY_PREFIX = ''
 
 
 default = DefaultConfig()
