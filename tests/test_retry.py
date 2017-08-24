@@ -24,7 +24,7 @@ class RetryTestCase(unittest.TestCase):
         pass
 
     @staticmethod
-    @retry(max_retries=20)
+    @retry(max_retries=30, delay=1, step=1)
     def func_for_retry():
         """
         测试重试的函数，利用随机数，有一定概率抛出RuntimeError
