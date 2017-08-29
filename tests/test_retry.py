@@ -24,7 +24,7 @@ class RetryTestCase(unittest.TestCase):
         pass
 
     @staticmethod
-    @retry(max_retries=30, delay=0, step=0, exceptions=(TypeError,))
+    @retry(max_retries=30, delay=0, step=0, exceptions=(RuntimeError,))
     def func_for_retry():
         """
         测试重试的函数，利用随机数，有一定概率抛出RuntimeError
@@ -37,8 +37,25 @@ class RetryTestCase(unittest.TestCase):
         else:
             return 'python'
 
+    @staticmethod
+    @retry(max_retries=30, delay=0, step=0, exceptions=(RuntimeError,))
+    def func_for_retry2():
+        """
+        测试重试的函数，利用随机数，有一定概率抛出KeyError
+        :return:
+        """
+        i = randint(1, 5)
+        if i != 1:
+            raise KeyError
+        else:
+            return 'python'
+
     def test_retry(self):
         assert self.func_for_retry() == 'python'
+        try:
+            self.func_for_retry2()
+        except Exception as ex:
+            assert isinstance(ex, KeyError)
 
 if __name__ == '__main__':
     pass
