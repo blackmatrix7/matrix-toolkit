@@ -33,10 +33,6 @@ def retry(max_retries: int =5, delay: int =0, step: int =0, exceptions: tuple =(
         def _wrapper(*args, **kwargs):
             nonlocal delay, step, max_retries, exceptions
             func_ex = None
-            try:
-                iter(exceptions)
-            except TypeError:
-                exceptions = (exceptions,)
             while max_retries > 0:
                 try:
                     return func(*args, **kwargs)
