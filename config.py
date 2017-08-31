@@ -6,7 +6,6 @@
 # @Blog : http://www.cnblogs.com/blackmatrix/
 # @File : config.py
 # @Software: PyCharm
-from collections import UserDict
 __author__ = 'blackmatrix'
 
 
