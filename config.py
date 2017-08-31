@@ -6,7 +6,7 @@
 # @Blog : http://www.cnblogs.com/blackmatrix/
 # @File : config.py
 # @Software: PyCharm
-
+from collections import UserDict
 __author__ = 'blackmatrix'
 
 
@@ -29,10 +29,13 @@ class ConfigMixin:
         return getattr(self, item)
 
     def __iter__(self):
-        yield from (k for k in dir(self) if k.upper() == k)
+        return (k for k in dir(self) if k.upper() == k)
+
+    def __contains__(self, key):
+        return hasattr(self, key)
 
     def items(self):
-        yield from {k: getattr(self, k, None) for k in dir(self) if k.upper() == k}.items()
+        return {k: getattr(self, k, None) for k in dir(self) if k.upper() == k}.items()
 
     def get(self, item, value=None):
         return getattr(self, item, value)

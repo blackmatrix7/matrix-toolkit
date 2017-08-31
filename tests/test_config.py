@@ -12,7 +12,7 @@ from config import current_config
 __author__ = 'blackmatrix'
 
 
-class MemcachedTestCase(unittest.TestCase):
+class ConfigTestCase(unittest.TestCase):
 
     def setUp(self):
         pass
@@ -41,6 +41,10 @@ class MemcachedTestCase(unittest.TestCase):
             current_config.HELLO = 'ERROR'
         except Exception as ex:
             assert isinstance(ex, AttributeError)
+
+    @staticmethod
+    def test_get_item():
+        assert current_config['DEBUG'] == False
 
 if __name__ == '__main__':
     pass
