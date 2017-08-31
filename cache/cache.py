@@ -26,7 +26,7 @@ class Cache(Client):
     基于Python3-Memcached客户端轻度封装的缓存操作类
     """
 
-    def __init__(self, *, caching=True, config=None, servers: list = None, key_prefix: str='',
+    def __init__(self, *, decorator_enable=True, config=None, servers: list = None, key_prefix: str= '',
                  debug=False, pickle_protocol=0, pickler=pickle.Pickler, unpickler=pickle.Unpickler,
                  pload=None, pid=None, server_max_key_length=SERVER_MAX_KEY_LENGTH,
                  server_max_value_length=SERVER_MAX_VALUE_LENGTH, dead_retry=_DEAD_RETRY,
@@ -34,7 +34,7 @@ class Cache(Client):
                  check_keys=True):
         """
         初始化Memcached客户端
-        :param caching:  是否启用缓存，如果为False，缓存装饰器不会生效，主要解决在某些开发环境下不希望应用缓存的问题。
+        :param decorator_enable:  是否启用缓存，如果为False，缓存装饰器不会生效，主要解决在某些开发环境下不希望应用缓存的问题。
         :param config:  配置文件，dict，详细的配置文件项目说明见后。
                                 当配置文件项目与__init__参数重复时，以配置文件项目为准。
         :param servers:  Memcached 服务器列表
@@ -66,7 +66,7 @@ class Cache(Client):
         self.debug = config.get('DEBUG', debug)
         self.key_prefix = config.get('CACHE_KEY_PREFIX', key_prefix)
         self.servers = config.get('CACHE_MEMCACHED_SERVERS', servers)
-        self.caching = config.get('CACHING', caching)
+        self.caching = config.get('CACHE_DECORATOR_ENABLE', decorator_enable)
 
         super().__init__(servers=self.servers, debug=self.debug, pickleProtocol=pickle_protocol,
                          pickler=pickler, unpickler=unpickler, pload=pload, pid=pid,
