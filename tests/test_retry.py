@@ -14,9 +14,23 @@ __author__ = 'blackmatrix'
 测试retry装饰器是否正常工作
 """
 
+count = 0
+
 
 def callback(ex):
     assert isinstance(ex, BaseException)
+
+
+def callback2(ex):
+    global count
+    count += 1
+    return True
+
+
+def callback3(ex):
+    global count
+    count += 1
+    raise RuntimeError
 
 
 class RetryTestCase(unittest.TestCase):
@@ -83,6 +97,24 @@ class RetryTestCase(unittest.TestCase):
         else:
             return 'python'
 
+    @staticmethod
+    @retry(max_retries=30, delay=0, step=0, exceptions=KeyError, callback=callback2)
+    def func_for_retry5():
+        """
+        测试回调函数返回True时，终止重试
+        :return:
+        """
+        raise KeyError
+
+    @staticmethod
+    @retry(max_retries=30, delay=0, step=0, exceptions=KeyError, callback=callback3)
+    def func_for_retry6():
+        """
+        测试回调函数抛出异常时，终止重试
+        :return:
+        """
+        pass
+
     def test_retry(self):
         assert callable(callback)
         assert self.func_for_retry() == 'python'
@@ -92,6 +124,24 @@ class RetryTestCase(unittest.TestCase):
             assert isinstance(ex, KeyError)
         self.func_for_retry3()
         self.func_for_retry4()
+
+        try:
+            self.func_for_retry5()
+        except Exception as ex:
+            assert isinstance(ex, KeyError)
+        finally:
+            global count
+            assert count <= 1
+            count = 0
+
+        try:
+            self.func_for_retry6()
+        except Exception as ex:
+            assert isinstance(ex, RuntimeError)
+        finally:
+            global count
+            assert count <= 1
+            count = 0
 
 if __name__ == '__main__':
     pass
