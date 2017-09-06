@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @Time  : 2017/8/24 20:36
-# @Author  : BlackMatrix
-# @Site : 
+# @Time : 2017/8/18 上午9:50
+# @Author : Matrix
+# @Github : https://github.com/blackmatrix7/
+# @Blog : http://www.cnblogs.com/blackmatrix/
 # @File : retry.py
 # @Software: PyCharm
 from time import sleep
