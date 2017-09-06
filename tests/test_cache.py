@@ -8,7 +8,7 @@
 # @Software: PyCharm
 import unittest
 from random import randint
-from cache.cache import Cache
+from decorator.cache import Cache
 from config import current_config
 
 __author__ = 'blackmatrix'

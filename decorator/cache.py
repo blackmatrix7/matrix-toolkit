@@ -61,6 +61,7 @@ class Cache(Client):
             key会自动加入这个前缀。
             set(key=''hello, value='value')，实际上在memcached中的key是testhello。
         CACHE_MEMCACHED_SERVERS： memcached服务器列表
+        CACHE_DECORATOR_ENABLE: cached缓存装饰器是否生效，此配置主要解决开发环境下不希望缓存生效的情况。
         """
         config = config or {}
         self.debug = config.get('DEBUG', debug)
