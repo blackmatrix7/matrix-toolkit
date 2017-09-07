@@ -37,7 +37,7 @@ def retry(max_retries: int =5, delay: int =0, step: int =0, exceptions: tuple =B
     def wrapper(func):
         @wraps(func)
         def _wrapper(*args, **kwargs):
-            nonlocal delay, step, max_retries, exceptions
+            nonlocal delay, step, max_retries
             func_ex = RuntimeError
             while max_retries > 0:
                 try:
