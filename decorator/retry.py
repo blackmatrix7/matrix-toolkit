@@ -29,7 +29,7 @@ def retry(max_retries: int =5, delay: int =0, step: int =0, exceptions: tuple =B
     自定义方法函数签名应与time.sleep相同，接收一个参数，为延迟执行的时间。
     :param callback: 回调函数，函数签名应接收一个参数，每次出现异常时，会将异常对象传入。
     可用于记录异常日志，中断重试等。
-    如回调函数正常执行，并返回True，则终止重试，并将被装饰函数的异常冒泡抛出。
+    如回调函数正常执行，并返回True，则表示告知重试装饰器异常已经处理，重试装饰器终止重试，并且不会抛出任何异常。
     如回调函数正常执行，没有返回值或返回除True以外的结果，则继续重试。
     如回调函数抛出异常，则终止重试，并将回调函数的异常冒泡抛出。
     :return: 被装饰函数的执行结果。
@@ -44,7 +44,7 @@ def retry(max_retries: int =5, delay: int =0, step: int =0, exceptions: tuple =B
                     return func(*args, **kwargs)
                 except exceptions as ex:
                     if callable(callback) and callback(ex) is True:
-                        raise ex
+                        return
                     func_ex = ex
                 finally:
                     max_retries -= 1

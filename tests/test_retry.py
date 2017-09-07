@@ -125,14 +125,7 @@ class RetryTestCase(unittest.TestCase):
         self.func_for_retry3()
         self.func_for_retry4()
 
-        try:
-            self.func_for_retry5()
-        except Exception as ex:
-            assert isinstance(ex, KeyError)
-        finally:
-            global count
-            assert count <= 1
-            count = 0
+        self.func_for_retry5()
 
         try:
             self.func_for_retry6()
