@@ -125,7 +125,7 @@ class RabbitMQ:
         return retinfo
 
     # 使用此装饰器将被装饰的函数的返回结果发送消息到RabbitMQ
-    def send_to_rabbitmq(self, exchange_name, queue_name, routing_key, exchange_type='direct', passive=False,
+    def send_to_rabbitmq(self, exchange_name, queue_name, exchange_type='direct', passive=False,
                          durable=True, auto_delete=False, internal=False):
         def _send_to_rabbitmq(func):
             def wrapper(*args, **kwargs):
@@ -134,7 +134,7 @@ class RabbitMQ:
                 if data:
                     result = self.send_message(exchange_name=exchange_name, queue_name=queue_name, messages=data,
                                                exchange_type=exchange_type, passive=passive, durable=durable,
-                                               auto_delete=auto_delete, internal=internal, routing_key=routing_key)
+                                               auto_delete=auto_delete, internal=internal)
                     self.disconnect()
                 return data, result
             return wrapper
