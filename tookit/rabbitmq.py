@@ -127,16 +127,26 @@ class RabbitMQ:
     # 使用此装饰器将被装饰的函数的返回结果发送消息到RabbitMQ
     def send_to_rabbitmq(self, exchange_name, queue_name, exchange_type='direct', passive=False,
                          durable=True, auto_delete=False, internal=False):
+        """
+        装饰器，可将被装饰的函数的返回值发送到消息队列，不推荐使用，建议使用send_message直接发送。
+        :param exchange_name:
+        :param queue_name:
+        :param exchange_type:
+        :param passive:
+        :param durable:
+        :param auto_delete:
+        :param internal:
+        :return:
+        """
         def _send_to_rabbitmq(func):
             def wrapper(*args, **kwargs):
-                data = func(*args, **kwargs)
-                result = dict()
-                if data:
-                    result = self.send_message(exchange_name=exchange_name, queue_name=queue_name, messages=data,
-                                               exchange_type=exchange_type, passive=passive, durable=durable,
-                                               auto_delete=auto_delete, internal=internal)
-                    self.disconnect()
-                return data, result
+                messages = func(*args, **kwargs)
+                self.connect()
+                self.send_message(exchange_name=exchange_name, queue_name=queue_name, messages=messages,
+                                  exchange_type=exchange_type, passive=passive, durable=durable,
+                                  auto_delete=auto_delete, internal=internal)
+                self.disconnect()
+                return messages
             return wrapper
         return _send_to_rabbitmq
 
@@ -158,7 +168,8 @@ class RabbitMQ:
                 self.connect()
                 # 声明交换机
                 self.channel.exchange_declare(exchange=exchange_name, exchange_type=exchange_type,
-                                              passive=passive, durable=durable, auto_delete=auto_delete, internal=internal)
+                                              passive=passive, durable=durable, auto_delete=auto_delete,
+                                              internal=internal)
                 # 声明队列
                 self.channel.queue_declare(queue=queue_name, durable=True)
                 # 将队列绑定到交换机上，并设置路由键
