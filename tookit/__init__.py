@@ -6,6 +6,7 @@
 # @Blog : http://www.cnblogs.com/blackmatrix/
 # @File : __init__.py.py
 # @Software: PyCharm
+from .rabbitmq import RabbitMQ
 from .config import BaseConfig, ConfigMixin, get_current_config
 
 __author__ = 'blackmatrix'

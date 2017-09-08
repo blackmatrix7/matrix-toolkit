@@ -24,6 +24,12 @@ class DefaultConfig(BaseConfig):
     CACHE_MEMCACHED_SERVERS = ['127.0.0.1:11211']
     CACHE_KEY_PREFIX = ''
 
+    # RabbitMQ
+    RABBITMQ_HOST = '127.0.0.1'
+    RABBITMQ_PORT = 5672
+    RABBITMQ_USER = 'user'
+    RABBITMQ_PASS = 'password'
+
 
 default = DefaultConfig()
 

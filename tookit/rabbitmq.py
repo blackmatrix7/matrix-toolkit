@@ -63,7 +63,7 @@ class RabbitMQ:
     def send_message(self, exchange_name, queue_name, messages, exchange_type='direct',
                      passive=False, durable=True, auto_delete=False, internal=False):
         """
-        向RabbitMQ发送消息，如果rabbitmq未连接，会自行连接，但在消息发送结束后，不会自动断开连接。
+        向RabbitMQ发送消息，需手动连接rabbitmq，消息发送完成后，需手动断开连接
         :param exchange_name: 交换机名称
         :param queue_name: 队列名称
         :param messages: 消息内容，单条消息可以str、dict传入，多条消息以list、tuple或其它可迭代对象传入
@@ -74,8 +74,6 @@ class RabbitMQ:
         :param internal:
         :return:
         """
-        # 连接rabbitMQ
-        self.connect()
         # 声明交换机
         self.channel.exchange_declare(exchange=exchange_name, exchange_type=exchange_type,
                                       passive=passive, durable=durable, auto_delete=auto_delete,
@@ -92,7 +90,7 @@ class RabbitMQ:
                 raise ValueError
             items = messages
         except ValueError:
-            items = list(messages)
+            items = [messages]
         # 尝试发送到消息队列的数量
         message_count = 0
         # 成功的数量
@@ -121,7 +119,7 @@ class RabbitMQ:
         return retinfo
 
     # 使用此装饰器将被装饰的函数的返回结果发送消息到RabbitMQ
-    def send_to_rabbitmq(self, exchange_name, queue_name, exchange_type='direct', passive=False,
+    def send_to_rabbitmq(self, exchange_name, queue_name, routing_key, exchange_type='direct', passive=False,
                          durable=True, auto_delete=False, internal=False):
         def _send_to_rabbitmq(func):
             def wrapper(*args, **kwargs):
@@ -130,7 +128,7 @@ class RabbitMQ:
                 if data:
                     result = self.send_message(exchange_name=exchange_name, queue_name=queue_name, messages=data,
                                                exchange_type=exchange_type, passive=passive, durable=durable,
-                                               auto_delete=auto_delete, internal=internal)
+                                               auto_delete=auto_delete, internal=internal, routing_key=routing_key)
                     self.disconnect()
                 return data, result
             return wrapper
