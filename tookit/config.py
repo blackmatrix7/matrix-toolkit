@@ -6,6 +6,7 @@
 # @Blog : http://www.cnblogs.com/blackmatrix/
 # @File : config.py
 # @Software: PyCharm
+import os
 __author__ = 'blackmatrix'
 
 
@@ -44,7 +45,8 @@ class BaseConfig(ConfigMixin):
     """
     配置文件基类
     """
-    pass
+    # 项目路径
+    PROJ_PATH = os.path.abspath('')
 
 
 def get_current_config(config_name=None):

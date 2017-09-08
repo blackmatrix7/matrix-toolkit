@@ -44,7 +44,13 @@ class ConfigTestCase(unittest.TestCase):
 
     @staticmethod
     def test_get_item():
-        assert current_config['DEBUG'] == False
+        assert current_config['DEBUG'] is False
+
+    @staticmethod
+    def test_project_path():
+        import os
+        assert current_config.PROJ_PATH == os.path.abspath('')
+
 
 if __name__ == '__main__':
     pass
