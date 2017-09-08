@@ -8,6 +8,7 @@
 # @Software: PyCharm
 import pika
 import json
+from json.decoder import JSONDecodeError
 
 __author__ = 'blackmatrix'
 
@@ -82,14 +83,19 @@ class RabbitMQ:
         self.channel.queue_declare(queue=queue_name, durable=True)
         # 将队列绑定到交换机上，并设置路由键，将队列名称和路由键设置一致便于理解和管理
         self.channel.queue_bind(exchange=exchange_name, queue=queue_name, routing_key=queue_name)
+        # JSON格式支持
+        try:
+            messages = json.loads(messages)
+        except (TypeError, JSONDecodeError):
+            pass
         # 判断消息类型
         try:
             iter(messages)
             # 对于dict和str不进行迭代
             if isinstance(messages, dict) or isinstance(messages, str):
-                raise ValueError
+                raise TypeError
             items = messages
-        except ValueError:
+        except (TypeError, ValueError):
             items = [messages]
         # 尝试发送到消息队列的数量
         message_count = 0
