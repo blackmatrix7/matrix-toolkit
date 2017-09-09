@@ -78,7 +78,7 @@ class RabbitTestCase(unittest.TestCase):
         :return:
         """
         self.rabbitmq.connect()
-        messages = '[{"user": "jim", "age: 13}, {"user": "jack", "age": 24}]'
+        messages = '[{"user": "jim", "age: 1,3,}, {"user": "jack", "age": 24}]'
         result = self.send_messages(messages=messages)
         assert result == {'success': 1, 'message': 1, 'error': [], 'failed': 0}
         self.rabbitmq.disconnect()
