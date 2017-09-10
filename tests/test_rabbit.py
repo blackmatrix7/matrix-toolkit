@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Time : 2017/9/8 下午4:20
-# @Author : Matrix
+# @Author : BlackMatrix
 # @Github : https://github.com/blackmatrix7/
 # @Blog : http://www.cnblogs.com/blackmatrix/
 # @File : test_rabbitmq.py
