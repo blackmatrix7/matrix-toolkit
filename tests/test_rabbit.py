@@ -83,5 +83,19 @@ class RabbitTestCase(unittest.TestCase):
         assert result == {'success': 1, 'message': 1, 'error': [], 'failed': 0}
         self.rabbitmq.disconnect()
 
+    def test_close_and_open(self):
+        self.rabbitmq.connect()
+        assert not self.rabbitmq.connection.is_closed
+        self.rabbitmq.connect()
+        self.rabbitmq.connect()
+        self.rabbitmq.disconnect()
+        assert not self.rabbitmq.connection.is_closed
+        self.rabbitmq.disconnect()
+        assert not self.rabbitmq.connection.is_closed
+        self.rabbitmq.disconnect()
+        assert self.rabbitmq.connection.is_closed
+
+
+
 if __name__ == '__main__':
     pass
