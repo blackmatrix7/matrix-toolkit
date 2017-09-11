@@ -35,30 +35,29 @@ class RabbitMQ:
         当rabbitmq 未连接时，自动连接，如果已连接，不进行任何操作
         :return:
         """
-        if self.connection is None or self.connection.is_closed:
+        if self.connect_count <= 0 and self.connection is None or self.connection.is_closed:
             credentials = pika.PlainCredentials(self.user, self.pwd)
             parameters = pika.ConnectionParameters(self.host, self.port, '/', credentials)
             self.connection = pika.BlockingConnection(parameters)
             self.channel = self.connection.channel()
+        self.connect_count += 1
 
     def disconnect(self):
         """
         当连接打开时，断开连接
         :return:
         """
-        if self.connection.is_open:
+        self.connect_count -= 1
+        if self.connect_count <= 0 and self.connection.is_open:
             self.channel.close()
             self.connection.close()
 
     def __enter__(self):
-        self.connect_count += 1
         self.connect()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.connect_count -= 1
-        if self.count <= 0:
-            self.disconnect()
+        self.disconnect()
 
     # 用于发送消息到指定的交换机，并绑定队列到对应的交换机
     def send_message(self, exchange_name, queue_name, messages, exchange_type='direct',
