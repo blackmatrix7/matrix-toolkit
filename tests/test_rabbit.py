@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Time : 2017/9/8 下午4:20
-# @Author : Matrix
+# @Author : BlackMatrix
 # @Github : https://github.com/blackmatrix7/
 # @Blog : http://www.cnblogs.com/blackmatrix/
 # @File : test_rabbitmq.py
@@ -78,10 +78,24 @@ class RabbitTestCase(unittest.TestCase):
         :return:
         """
         self.rabbitmq.connect()
-        messages = '[{"user": "jim", "age: 13}, {"user": "jack", "age": 24}]'
+        messages = '[{"user": "jim", "age: 1,3,}, {"user": "jack", "age": 24}]'
         result = self.send_messages(messages=messages)
         assert result == {'success': 1, 'message': 1, 'error': [], 'failed': 0}
         self.rabbitmq.disconnect()
+
+    def test_close_and_open(self):
+        self.rabbitmq.connect()
+        assert not self.rabbitmq.connection.is_closed
+        self.rabbitmq.connect()
+        self.rabbitmq.connect()
+        self.rabbitmq.disconnect()
+        assert not self.rabbitmq.connection.is_closed
+        self.rabbitmq.disconnect()
+        assert not self.rabbitmq.connection.is_closed
+        self.rabbitmq.disconnect()
+        assert self.rabbitmq.connection.is_closed
+
+
 
 if __name__ == '__main__':
     pass
