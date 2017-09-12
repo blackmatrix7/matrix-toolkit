@@ -17,7 +17,7 @@ __author__ = 'blackmatrix'
 """
 
 
-def retry(max_retries: int =5, delay: int =0, step: int =0, exceptions: tuple =BaseException, sleep_func=sleep, callback=None):
+def retry(max_retries: int =5, delay: (int, float) =0, step: (int, float) =0, exceptions: tuple =BaseException, sleep_func=sleep):
     """
     函数执行出现异常时自动重试的简单装饰器。
     :param max_retries:  最多重试次数。
