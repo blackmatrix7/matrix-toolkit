@@ -8,6 +8,7 @@
 # @Software: PyCharm
 import pika
 import json
+from functools import wraps
 from json.decoder import JSONDecodeError
 
 __author__ = 'blackmatrix'
@@ -138,6 +139,7 @@ class RabbitMQ:
         :return:
         """
         def _send_to_rabbitmq(func):
+            @wraps(func)
             def wrapper(*args, **kwargs):
                 messages = func(*args, **kwargs)
                 self.connect()
@@ -153,16 +155,17 @@ class RabbitMQ:
     def receive_from_rabbitmq(self, exchange_name, queue_name, routing_key, exchange_type='direct',
                               passive=False, durable=True, auto_delete=False, internal=False):
         def _receive_from_rabbitmq(func):
+            @wraps(func)
             def wrapper(*args, **kwargs):
                 # 回调函数，用于消费消息及消息确认
                 def callback(ch, method, properties, body):
                     # 获取消费消息的结果，True或者False
                     result = func(*args, message=body, **kwargs)
-                    if result:
-                        # 返回结果为True时，进行消息确认，此时RabbitMQ才从消息队列中移除订单消息
+                    if result is True:
+                        # 返回结果为True时，进行消息确认，此时RabbitMQ才从消息队列中移除消息
                         ch.basic_ack(delivery_tag=method.delivery_tag)
                     else:
-                        # 返回结果为False时，不进行消息确认，将订单消息重新加入消息队列，等待下次处理
+                        # 返回结果为False时，不进行消息确认，将消息重新加入消息队列，等待下次处理
                         ch.basic_nack(delivery_tag=method.delivery_tag)
                 self.connect()
                 # 声明交换机
