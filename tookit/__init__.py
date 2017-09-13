@@ -6,6 +6,8 @@
 # @Blog : http://www.cnblogs.com/blackmatrix/
 # @File : __init__.py.py
 # @Software: PyCharm
+from .retry import retry
+from .cache import Cache
 from .rabbit import RabbitMQ
 from .config import BaseConfig, ConfigMixin, get_current_config
 

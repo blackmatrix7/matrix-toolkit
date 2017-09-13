@@ -7,8 +7,8 @@
 # @File : test_cache.py
 # @Software: PyCharm
 import unittest
+from tookit import Cache
 from random import randint
-from decorator.cache import Cache
 from config import current_config
 
 __author__ = 'blackmatrix'

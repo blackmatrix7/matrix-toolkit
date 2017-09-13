@@ -6,8 +6,8 @@
 # @File : test_retry.py
 # @Software: PyCharm
 import unittest
+from tookit import retry
 from random import randint
-from decorator.retry import retry
 __author__ = 'blackmatrix'
 
 """
