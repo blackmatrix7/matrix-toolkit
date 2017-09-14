@@ -17,6 +17,12 @@ __author__ = 'blackmatrix'
 """
 
 
+class StopRetry(Exception):
+
+    def __repr__(self):
+        return 'retry stop'
+
+
 def retry(max_retries: int =5, delay: (int, float) =0, step: (int, float) =0,
           exceptions: (BaseException, tuple, list) =BaseException,
           sleep_func=sleep, callback=None, validate=None):
@@ -46,7 +52,7 @@ def retry(max_retries: int =5, delay: (int, float) =0, step: (int, float) =0,
         @wraps(func)
         def _wrapper(*args, **kwargs):
             nonlocal delay, step, max_retries
-            func_ex = RuntimeError
+            func_ex = StopRetry
             while max_retries > 0:
                 try:
                     result = func(*args, **kwargs)

@@ -8,6 +8,7 @@
 import unittest
 from tookit import retry
 from random import randint
+from tookit.retry import StopRetry
 __author__ = 'blackmatrix'
 
 """
@@ -155,7 +156,7 @@ class RetryTestCase(unittest.TestCase):
         try:
             self.func_for_retry6()
         except Exception as ex:
-            assert isinstance(ex, RuntimeError)
+            assert isinstance(ex, StopRetry)
         finally:
             assert count <= 1
             count = 0
@@ -163,7 +164,7 @@ class RetryTestCase(unittest.TestCase):
         try:
             self.func_for_retry7()
         except Exception as ex:
-            assert isinstance(ex, RuntimeError)
+            assert isinstance(ex, StopRetry)
         finally:
             assert count == 5
             count = 0
