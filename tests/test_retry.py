@@ -33,6 +33,12 @@ def callback3(ex):
     raise RuntimeError
 
 
+def validate1(result):
+    global count
+    count += 1
+    return False
+
+
 class RetryTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -115,7 +121,26 @@ class RetryTestCase(unittest.TestCase):
         """
         pass
 
+    @staticmethod
+    @retry(max_retries=5, delay=0, step=0, exceptions=KeyError,  validate=validate1)
+    def func_for_retry7():
+        """
+        测试当验证函数返回False时，即使函数不出错也继续重试
+        :return:
+        """
+        print('func_for_retry7')
+
+    @staticmethod
+    @retry(max_retries=5, delay=0, step=0, exceptions=KeyError,  validate=validate1)
+    def func_for_retry7():
+        """
+        测试当验证函数返回False时，即使函数不出错也继续重试
+        :return:
+        """
+        print('func_for_retry7')
+
     def test_retry(self):
+        global count
         assert callable(callback)
         assert self.func_for_retry() == 'python'
         try:
@@ -132,8 +157,15 @@ class RetryTestCase(unittest.TestCase):
         except Exception as ex:
             assert isinstance(ex, RuntimeError)
         finally:
-            global count
             assert count <= 1
+            count = 0
+
+        try:
+            self.func_for_retry7()
+        except Exception as ex:
+            assert isinstance(ex, RuntimeError)
+        finally:
+            assert count == 5
             count = 0
 
 if __name__ == '__main__':
