@@ -140,19 +140,52 @@ class RetryTestCase(unittest.TestCase):
         """
         print('func_for_retry7')
 
-    def test_retry(self):
+    def test_func_retry(self):
+        """
+        测试有一定概率抛出异常，能正常重试并返回结果
+        :return:
+        """
         global count
         assert callable(callback)
         assert self.func_for_retry() == 'python'
+
+    def test_func_retry2(self):
+        """
+        测试引发的异常类型与重试装饰器的异常类型不同时，能否正常抛出异常
+        :return:
+        """
         try:
             self.func_for_retry2()
         except Exception as ex:
             assert isinstance(ex, KeyError)
+
+    def test_func_retry3(self):
+        """
+        测试传入多个异常类型是否能正常工作
+        :return:
+        """
         self.func_for_retry3()
+
+    def test_func_retry4(self):
+        """
+        测试回调函数是否正常工作
+        :return:
+        """
         self.func_for_retry4()
 
+    def test_func_retry5(self):
+        """
+        测试回调函数返回True时，终止重试
+        :return:
+        """
         self.func_for_retry5()
 
+    def test_func_retry6(self):
+        """
+        测试回调函数抛出异常时，终止重试
+        :return:
+        """
+        global count
         try:
             self.func_for_retry6()
         except Exception as ex:
@@ -161,6 +194,12 @@ class RetryTestCase(unittest.TestCase):
             assert count <= 1
             count = 0
 
+    def test_func_retry7(self):
+        """
+        测试当验证函数返回False时，即使函数不出错也继续重试
+        :return:
+        """
+        global count
         try:
             self.func_for_retry7()
         except Exception as ex:
