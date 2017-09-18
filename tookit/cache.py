@@ -179,7 +179,9 @@ class Cache(Client):
                     result = func(*args, **kwargs)
                 else:
                     # 将签名作为key，读取缓存中的函数执行结果
-                    result = func_cache.get(args_sig, func(*args, **kwargs))
+                    result = func_cache.get(args_sig)
+                    if result is None:
+                        result = func_cache.get(args_sig, func(*args, **kwargs))
                     # 如果签名未被缓存，且缓存数量超出限制大小则删除最早的缓存
                     if len(func_cache) >= maxsize and args_sig not in func_cache:
                         func_cache.popitem(last=False)
