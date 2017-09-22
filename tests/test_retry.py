@@ -6,9 +6,9 @@
 # @File : test_retry.py
 # @Software: PyCharm
 import unittest
-from tookit import retry
+from toolkit import retry
 from random import randint
-from tookit.retry import StopRetry
+from toolkit.retry import StopRetry
 __author__ = 'blackmatrix'
 
 """

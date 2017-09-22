@@ -7,7 +7,7 @@
 # @File : test_cache.py
 # @Software: PyCharm
 import unittest
-from tookit import Cache
+from toolkit import Cache
 from random import randint
 from config import current_config
 

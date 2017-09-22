@@ -6,7 +6,7 @@
 # @Blog : http://www.cnblogs.com/blackmatrix/
 # @File : config.py
 # @Software: PyCharm
-from tookit import BaseConfig, get_current_config
+from toolkit import BaseConfig, get_current_config
 
 __author__ = 'blackmatrix'
 

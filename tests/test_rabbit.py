@@ -7,7 +7,7 @@
 # @File : test_rabbitmq.py
 # @Software: PyCharm
 import unittest
-from tookit import RabbitMQ
+from toolkit import RabbitMQ
 from functools import partial
 from config import current_config
 
