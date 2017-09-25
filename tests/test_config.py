@@ -51,6 +51,12 @@ class ConfigTestCase(unittest.TestCase):
         import os
         assert current_config.PROJ_PATH == os.path.abspath('')
 
+    @staticmethod
+    def test_login_url():
+        from config import demo01, demo02
+        assert demo01.LOGIN_URL == 'http://192.168.1.10/login'
+        assert demo02.LOGIN_URL == 'http://10.10.10.10/login'
+
 
 if __name__ == '__main__':
     pass

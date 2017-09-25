@@ -52,9 +52,6 @@ class BaseConfig(ConfigMixin):
     # 项目路径
     PROJ_PATH = os.path.abspath('')
 
-default = BaseConfig()
-configs = {'default': default}
-
 
 def get_current_config(config_name=None):
     """
@@ -73,6 +70,8 @@ def get_current_config(config_name=None):
     return current_config
 
 
+default = BaseConfig()
+configs = {'default': default}
 
 
 
