@@ -43,12 +43,8 @@ class BaseDemoConfig(BaseConfig):
 
     """
     对于需要通过其他属性运算获得的属性参数，需要定义在特性中
-    为保证格式统一，建议为特性方法取一个全部为大写的别名
     """
-    @property
-    def login_url(self):
-        return 'http://{host}/login'.format(host=self.HOST)
-    LOGIN_URL = login_url
+    LOGIN_URL = property(lambda self: 'http://{host}/login'.format(host=self.HOST))
 
 
 class DemoConfig01(BaseDemoConfig):
