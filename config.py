@@ -31,9 +31,40 @@ class DefaultConfig(BaseConfig):
     RABBITMQ_PASS = 'password'
 
 
-default = DefaultConfig()
+"""
+以下为测试用数据
+"""
 
-configs = {'default': default}
+
+class BaseDemoConfig(BaseConfig):
+
+    # HOST
+    HOST = '127.0.0.1'
+
+    """
+    对于需要通过其他属性运算获得的属性参数，需要定义在特性中
+    """
+    LOGIN_URL = property(lambda self: 'http://{host}/login'.format(host=self.HOST))
+
+
+class DemoConfig01(BaseDemoConfig):
+    # HOST
+    HOST = '192.168.1.10'
+
+
+class DemoConfig02(BaseDemoConfig):
+    # HOST
+    HOST = '10.10.10.10'
+
+
+default = DefaultConfig()
+demo01 = DemoConfig01()
+demo02 = DemoConfig02()
+
+
+configs = {'default': default,
+           'demo01': demo01,
+           'demo02': demo02}
 
 # 读取配置文件的名称，在具体的应用中，可以从环境变量、命令行参数等位置获取配置文件名称
 config_name = 'default'
