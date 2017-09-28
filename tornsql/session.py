@@ -26,16 +26,27 @@ class Scope:
 
 scope = Scope()
 
-engine = create_engine()
 
-db = scoped_session(sessionmaker(autocommit=False,
-                                 autoflush=True,
-                                 expire_on_commit=False,
-                                 bind=engine,
-                                 scopefunc=scope.get))
+class DataBase:
 
-Base = declarative_base()
-Base.query = db.query_property()
+    def __init__(self, config=None, connect_str=None, echo=True, max_overflow=5, encoding='utf-8'):
+        config = config or {}
+        self.echo = config.get('DB_ECHO', echo)
+        self.encoding = config.get('DB_ENCODING', encoding)
+        self.connect_str = config.get('DB_CONNECT', connect_str)
+        self.max_overflow = config.get('DB_MAX_OVERFLOW', max_overflow)
+        self.engine = None
+
+    def create_engine(self):
+        if self.engine is None:
+            self.engine = create_engine(self.connect_str, echo=self.echo, max_overflow=self.max_overflow, encoding=self.encoding)
+        return self.engine
+
+    @property
+    def scoped_session(self):
+        session = scoped_session(sessionmaker(autocommit=False, autoflush=True, expire_on_commit=False, bind=engine, scopefunc=scope.get))
+        return session
+
 
 if __name__ == '__main__':
     pass
