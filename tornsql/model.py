@@ -6,6 +6,7 @@
 # @Blog : http://www.cnblogs.com/blackmatrix/
 # @File : model.py
 # @Software: PyCharm
+from .session import db
 from datetime import datetime
 from sqlalchemy import Column
 from sqlalchemy.ext.declarative import declarative_base
@@ -21,28 +22,28 @@ class ModelMixin:
     def __getitem__(self, item):
         return getattr(self, item)
 
-    # def __setitem__(self, key, value):
-    #     setattr(self, key, value)
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
 
-    # def upsert(self):
-    #     db.session.add(self)
-    #     return self
-    #
-    # def delete(self):
-    #     db.session.delete(self)
-    #     return self
+    def upsert(self):
+        db.session.add(self)
+        return self
+
+    def delete(self):
+        db.session.delete(self)
+        return self
 
     @property
     def columns(self):
         return (c.name for c in self.__table__.columns)
 
-    # @staticmethod
-    # def commit():
-    #     db.session.commit()
-    #
-    # @classmethod
-    # def get_by_id(cls, id_):
-    #     return db.session.query(cls).filter(cls.id == int(id_)).first()
+    @staticmethod
+    def commit():
+        db.session.commit()
+
+    @classmethod
+    def get_by_id(cls, id_):
+        return db.session.query(cls).filter(cls.id == int(id_)).first()
 
     def to_dict(self, columns=None):
         """
