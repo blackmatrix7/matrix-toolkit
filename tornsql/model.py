@@ -80,6 +80,3 @@ class ModelBase(BaseModel, ModelMixin):
 
     def __init__(self, *args, **kwargs):
         super(ModelBase, self).__init__(*args, **kwargs)
-
-if __name__ == '__main__':
-    pass
