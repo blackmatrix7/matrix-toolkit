@@ -24,6 +24,3 @@ class BaseHandler(web.RequestHandler):
     # make pycharm happy
     def data_received(self, chunk):
         raise NotImplementedError()
-
-if __name__ == '__main__':
-    pass
