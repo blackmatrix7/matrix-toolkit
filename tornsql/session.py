@@ -49,8 +49,8 @@ class DataBase:
         return self._engine
 
 
-def create_db(engin):
-    return scoped_session(sessionmaker(autocommit=False, autoflush=True, expire_on_commit=False, bind=engine), scopefunc=scope.get)
+def create_db(db_engine):
+    return scoped_session(sessionmaker(autocommit=False, autoflush=True, expire_on_commit=False, bind=db_engine), scopefunc=scope.get)
 
 engine = DataBase(connect_str=current_config.WORKFLOW_DB_CONNECT).engine
 
