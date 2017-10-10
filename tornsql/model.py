@@ -26,11 +26,11 @@ class ModelMixin:
         setattr(self, key, value)
 
     def upsert(self):
-        db.session.add(self)
+        db.add(self)
         return self
 
     def delete(self):
-        db.session.delete(self)
+        db.delete(self)
         return self
 
     @property
@@ -39,11 +39,11 @@ class ModelMixin:
 
     @staticmethod
     def commit():
-        db.session.commit()
+        db.commit()
 
     @classmethod
     def get_by_id(cls, id_):
-        return db.session.query(cls).filter(cls.id == int(id_)).first()
+        return db.query(cls).filter(cls.id == int(id_)).first()
 
     def to_dict(self, columns=None):
         """
@@ -80,3 +80,6 @@ class ModelBase(BaseModel, ModelMixin):
 
     def __init__(self, *args, **kwargs):
         super(ModelBase, self).__init__(*args, **kwargs)
+
+if __name__ == '__main__':
+    pass
