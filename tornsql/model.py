@@ -72,7 +72,7 @@ class ModelBase(BaseModel, ModelMixin):
     # onupdate 表示任何列的更新都会触发重置此列
     update_time = Column(DateTime, nullable=True, onupdate=datetime.now)
     # 最后更新操作者id
-    updater_user_id = Column(Integer, nullable=True)
+    update_user_id = Column(Integer, nullable=True)
     # 最后更新操作者姓名
     update_user_name = Column(String(30), nullable=True)
     # 是否删除
