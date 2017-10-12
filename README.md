@@ -1,4 +1,4 @@
-# Matirx Tookit
+### Matirx Toolkit
 一些方便日常使用的小工具，及制造过的小轮子。
 
 ## [config](https://github.com/blackmatrix7/matirx-tookit/blob/master/tookit/config.py)
@@ -12,3 +12,7 @@
 ## **[retry](https://github.com/blackmatrix7/matirx-tookit/blob/master/decorator/retry.py)**
 
 在函数执行出现异常时自动重试的简单装饰器，支持设定每次重试间隔时间，及每次重试间隔时间递增。
+
+## [tornsql](https://github.com/blackmatrix7/matrix-toolkit/tree/master/tornsql)
+
+一个tornado 与 sqlalchemy 结合的例子，来自[这里](http://amitmatani.com/scoping-sqlalchemys-session-while-using-tornado-dot-gen)，待验证测试。
