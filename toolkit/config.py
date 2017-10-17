@@ -63,15 +63,12 @@ def get_current_config(config_name=None):
     # 读取配置文件的名称，在具体的应用中，可以从环境变量、命令行参数等位置获取配置文件名称
     config_name = config_name or 'default'
     try:
-        import localconfig
-        current_config = localconfig.configs[config_name]
+        from localconfig import configs
+        current_config = configs[config_name]
     except ImportError:
+        from config import configs
         current_config = configs[config_name]
     return current_config
-
-
-default = BaseConfig()
-configs = {'default': default}
 
 
 
