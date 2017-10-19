@@ -53,22 +53,21 @@ class BaseConfig(ConfigMixin):
     PROJ_PATH = os.path.abspath('')
 
 
-def get_current_config(config_name=None):
+def get_current_config(config_name='default'):
     """
     对本地配置文件的支持，当项目根目录存在localconfig.py文件时
     优先从localconfig.py中读取配置，如果不存在读取config.py的配置。
     localconfig.py 应该加入git的忽略文件
     :return:
     """
-    # 读取配置文件的名称，在具体的应用中，可以从环境变量、命令行参数等位置获取配置文件名称
-    config_name = config_name or 'default'
     try:
         from localconfig import configs
         current_config = configs[config_name]
     except ImportError:
-        from config import configs
+        from settings2 import configs
         current_config = configs[config_name]
     return current_config
+
 
 
 
