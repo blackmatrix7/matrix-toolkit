@@ -13,17 +13,28 @@ __author__ = 'blackmatrix'
 
 class CmdLine:
 
+    def __init__(self):
+        self._main = sys.argv[0]
+        self._config = sys.argv[1] if len(sys.argv) >= 2 else 'default'
+        self._command = sys.argv[2] if len(sys.argv) >= 3 else 'runserver'
+
+    @property
+    def main(self):
+        return self._main
+
     @property
     def config(self):
-        args = sys.argv
-        return args[1] if len(args) >= 2 else 'default'
+        return self._config
 
     @property
     def command(self):
-        args = sys.argv
-        return args[2] if len(args) >= 3 else 'runserver'
+        return self._command
+
+    @property
+    def django_cmds(self):
+        from copy import copy
+        argv = copy(sys.argv)
+        del argv[1]
+        return argv
 
 cmdline = CmdLine()
-
-if __name__ == '__main__':
-    pass
