@@ -33,7 +33,7 @@ def create_engine(config=None, connect_str=None, echo=True, max_overflow=5, enco
     encoding = config.get('DB_ENCODING', encoding)
     connect_str = config.get('DB_CONNECT', connect_str)
     max_overflow = config.get('DB_MAX_OVERFLOW', max_overflow)
-    return default_create_engine(connect_str, echo=echo, max_overflow=max_overflow, encoding=encoding)
+    return default_create_engine(connect_str, echo=echo, max_overflow=max_overflow, encoding=encoding, pool_recycle=3600)
 
 
 def create_db(db_engine):
