@@ -17,8 +17,8 @@ original_runner_handle_exception = tornado.gen.Runner.handle_exception
 
 
 def new_runner_init(self, *args, **kwargs):
-    self.scope = scope.get()
     original_runner_init(self, *args, **kwargs)
+    self.scope = scope.get()
 
 
 def new_runner_run(self):

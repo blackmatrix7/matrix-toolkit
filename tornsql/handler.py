@@ -7,7 +7,7 @@
 # @Software: PyCharm
 import json
 from tornado import web
-from .session import scope, db
+from .session import scope, databases
 
 __author__ = 'blackmatrix'
 
@@ -48,7 +48,8 @@ class BaseHandler(web.RequestHandler):
 
     def on_finish(self):
         scope.set(self)
-        db.remove()
+        for name, database in databases.items():
+            database['db'].remove()
         scope.set(None)
 
     # make pycharm happy

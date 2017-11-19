@@ -6,18 +6,20 @@
 # @Blog : http://www.cnblogs.com/blackmatrix/
 # @File : model.py
 # @Software: PyCharm
-from .session import db
 from datetime import datetime
 from sqlalchemy import Column
+from .session import databases
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.types import Integer, String, DateTime, Boolean
 
 __author__ = 'blackmatrix'
 
-BaseModel = declarative_base()
+Model = declarative_base()
 
 
 class ModelMixin:
+
+    __database__ = ''
 
     def __getitem__(self, item):
         return getattr(self, item)
@@ -25,25 +27,45 @@ class ModelMixin:
     def __setitem__(self, key, value):
         setattr(self, key, value)
 
-    def upsert(self):
-        db.add(self)
+    @property
+    def id(self):
+        """
+        make pycharm happy
+        :return:
+        """
+        return NotImplemented
+
+    @property
+    def __table__(self):
+        """
+        make pycharm happy
+        :return:
+        """
+        return NotImplemented
+
+    @property
+    def db(self):
+        cls = type(self)
+        return databases[cls.__database__]['db']
+
+    def insert(self):
+        self.db.add(self)
         return self
 
     def delete(self):
-        db.delete(self)
+        self.db.delete(self)
         return self
 
     @property
     def columns(self):
         return (c.name for c in self.__table__.columns)
 
-    @staticmethod
-    def commit():
-        db.commit()
+    def commit(self):
+        self.db.commit()
 
     @classmethod
     def get_by_id(cls, id_):
-        return db.query(cls).filter(cls.id == int(id_)).first()
+        return databases[cls.__database__]['db'].query(cls).filter(cls.id == int(id_)).first()
 
     def to_dict(self, columns=None):
         """
@@ -56,9 +78,11 @@ class ModelMixin:
         return {c: getattr(self, c) for c in columns}
 
 
-class ModelBase(BaseModel, ModelMixin):
+class ModelBase(Model, ModelMixin):
 
     __abstract__ = True
+
+    __database__ = ''
 
     # 主键
     id = Column(Integer, primary_key=True, autoincrement=True)
