@@ -92,7 +92,7 @@ class RabbitMQ:
         try:
             iter(messages)
             # 对于dict和str不进行迭代
-            if isinstance(messages, dict) or isinstance(messages, str):
+            if isinstance(messages, (str, dict)):
                 raise TypeError
             items = messages
         except (TypeError, ValueError):
