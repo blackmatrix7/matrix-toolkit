@@ -39,20 +39,20 @@ class Cache(Client):
                                 当配置文件项目与__init__参数重复时，以配置文件项目为准。
         :param servers:  Memcached 服务器列表
         :param key_prefix:  key 前缀，会在每个key中加入对应的字符串前缀。
-        :param debug: 
-        :param pickle_protocol: 
-        :param pickler: 
-        :param unpickler: 
-        :param pload: 
-        :param pid: 
-        :param server_max_key_length: 
-        :param server_max_value_length: 
-        :param dead_retry: 
-        :param socket_timeout: 
-        :param cache_cas: 
-        :param flush_on_reconnect: 
-        :param check_keys: 
-        
+        :param debug:
+        :param pickle_protocol:
+        :param pickler:
+        :param unpickler:
+        :param pload:
+        :param pid:
+        :param server_max_key_length:
+        :param server_max_value_length:
+        :param dead_retry:
+        :param socket_timeout:
+        :param cache_cas:
+        :param flush_on_reconnect:
+        :param check_keys:
+
         目前在配置文件中支持如下参数：
         DEBUG： 是否启动debug模式
         CACHE_KEY_PREFIX： key 前缀，会在每个key中加入对应的字符串前缀。
@@ -160,7 +160,7 @@ class Cache(Client):
             # 如果生成参数签名过程中出现异常，则返回None
             return args_sig
 
-    def cached(self, key, timeout=36000, maxsize=30):
+    def cached(self, key, timeout=3600, maxsize=30):
         """
         函数装饰器，装饰到函数上时，会优先返回缓存的值。
         :param key: memcached key
@@ -175,6 +175,8 @@ class Cache(Client):
                 func_cache = self.get(key) or OrderedDict()
                 # 生成函数参数签名
                 args_sig = self._create_args_sig(func, *args, **kwargs)
+                # caching is False 是，在全局上暂时禁用缓存，便于调试
+                # 对于不能正常生产参数签名的函数，无法使用装饰器的方式实现缓存
                 if self.caching is False or args_sig is None:
                     result = func(*args, **kwargs)
                 else:
