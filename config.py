@@ -6,7 +6,7 @@
 # @Blog : http://www.cnblogs.com/blackmatrix/
 # @File : config.py
 # @Software: PyCharm
-from toolkit import BaseConfig, get_current_config
+from toolkit.config import BaseConfig, get_current_config
 
 __author__ = 'blackmatrix'
 
@@ -70,3 +70,19 @@ configs = {'default': default,
 config_name = 'default'
 
 current_config = get_current_config(config_name)
+
+
+# 读取当前配置项
+# current_config会根据当前的config_name获取到匹配的配置文件对象
+# 如果项目根目录存在localconfig.py，则优先从localconfig.py中读取
+from config import current_config
+# 获取配置文件中的属性
+# 配置文件对象，支持以.（点号）运算符获取对象的属性，也支持以key的形式获取对象的属性
+# 以下两种方式都能获取的配置项
+RABBITMQ_HOST = current_config.RABBIT_HOST
+RABBITMQ_PORT = current_config['RABBITMQ_PORT']
+# 配置文件支持遍历
+keys = [key for key in current_config]
+assert isinstance(keys, list)
+values = {k: v for k, v in current_config.items()}
+assert isinstance(values, dict)

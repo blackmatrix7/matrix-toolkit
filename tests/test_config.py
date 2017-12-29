@@ -27,8 +27,8 @@ class ConfigTestCase(unittest.TestCase):
 
     @staticmethod
     def test_config_items():
-        keys = {k: v for k, v in current_config.items()}
-        assert isinstance(keys, dict)
+        values = {k: v for k, v in current_config.items()}
+        assert isinstance(values, dict)
 
     @staticmethod
     def test_get_value():

@@ -64,11 +64,6 @@ def get_current_config(config_name='default'):
         from localconfig import configs
         current_config = configs[config_name]
     except ImportError:
-        from settings2 import configs
+        from config import configs
         current_config = configs[config_name]
     return current_config
-
-
-
-
-
