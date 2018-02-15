@@ -24,6 +24,9 @@ class Cache(Client):
 
     """
     基于Python3-Memcached客户端轻度封装的缓存操作类
+    注意：
+    使用cached函数装饰器时，每次新的函数执行结果，请求都会刷新缓存过期时间
+    所以使用cached函数装饰器时，缓存的过期事件并不可靠，请勿用于对缓存过期时间有严格要求的环境。
     """
 
     def __init__(self, *, decorator_enable=True, config=None, servers: list = None, key_prefix: str= '',
