@@ -13,12 +13,12 @@ from json.decoder import JSONDecodeError
 
 __author__ = 'blackmatrix'
 
-"""
-一个支持上下文的rabbitmq操作对象
-"""
-
 
 class RabbitMQ:
+    """
+    一个简单的RabbitMQ小工具，基于pika
+    缺少超时重新连接的机制，不要用于生产环境
+    """
 
     def __init__(self, user: str=None, pwd: str=None, host: str=None, port: int=5672, config: dict=None):
         self.config = config or {}

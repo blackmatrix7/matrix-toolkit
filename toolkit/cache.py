@@ -24,6 +24,9 @@ class Cache(Client):
 
     """
     基于Python3-Memcached客户端轻度封装的缓存操作类
+    注意：
+    使用cached函数装饰器时，每次新的函数执行结果，请求都会刷新缓存过期时间
+    所以使用cached函数装饰器时，缓存的过期事件并不可靠，请勿用于对缓存过期时间有严格要求的环境。
     """
 
     def __init__(self, *, decorator_enable=True, config=None, servers: list = None, key_prefix: str= '',
@@ -163,6 +166,9 @@ class Cache(Client):
     def cached(self, key, timeout=3600, maxsize=30):
         """
         函数装饰器，装饰到函数上时，会优先返回缓存的值。
+        注意：
+        使用cached函数装饰器时，每次新的函数执行结果，请求都会刷新缓存过期时间
+        所以使用cached函数装饰器时，缓存的过期事件并不可靠，请勿用于对缓存过期时间有严格要求的环境。
         :param key: memcached key
         :param timeout: 超时时间，单位秒
         :param maxsize: 最多缓存的数量，因为每次不同参数的函数调用都会生成对应的缓存，控制数量避免占用过多内存
