@@ -15,13 +15,8 @@ class CmdLine:
 
     def __init__(self):
         self._main = sys.argv[0]
-
-        if sys.platform == 'win32':
-            self._config = sys.argv[2] if len(sys.argv) >= 3 else 'default'
-            self._command = sys.argv[3] if len(sys.argv) >= 4 else 'runserver'
-        else:
-            self._config = sys.argv[1] if len(sys.argv) >= 2 else 'default'
-            self._command = sys.argv[2] if len(sys.argv) >= 3 else 'runserver'
+        self._config = None
+        self._command = sys.argv[2] if len(sys.argv) >= 3 else 'runserver'
         self._django_cmds = None
 
     @property
@@ -30,21 +25,37 @@ class CmdLine:
 
     @property
     def config(self):
-        return self._config
+        if self._config is not None:
+            return self._config
+        else:
+            for argv in sys.argv:
+                if 'env=' in argv or 'e=' in argv:
+                    config = sys.argv[1][sys.argv[1].find('=') + 1:]
+                    sys.argv.remove(argv)
+                    return config
+            else:
+                return 'debug'
 
     @property
     def command(self):
-        return self._command
+        assert self.config
+        try:
+            import django
+            return sys.argv
+        except ImportError:
+            if sys.platform == 'win32':
+                self._command = sys.argv[2] if len(sys.argv) >= 3 else 'runserver'
+            else:
+                self._command = sys.argv[1] if len(sys.argv) >= 2 else 'runserver'
 
     @property
-    def django_cmds(self):
-        if self._django_cmds:
-            return self._django_cmds
-        else:
-            from copy import copy
-            argv = copy(sys.argv)
-            del argv[1]
-            self._django_cmds = argv
-            return self._django_cmds
+    def settings(self):
+        settings_folder = 'local_settings'
+        try:
+            import local_settings
+        except ImportError:
+            settings_folder = 'settings'
+        return '{}.{}'.format(settings_folder, self.config)
+
 
 cmdline = CmdLine()
