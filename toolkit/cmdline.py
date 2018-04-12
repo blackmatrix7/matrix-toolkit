@@ -7,6 +7,7 @@
 # @File : cmdline.py
 # @Software: PyCharm
 import sys
+from importlib import import_module
 
 __author__ = 'blackmatrix'
 
@@ -29,10 +30,10 @@ class CmdLine:
             return self._config
         else:
             for argv in sys.argv:
-                if 'env=' in argv or 'e=' in argv:
-                    config = sys.argv[1][sys.argv[1].find('=') + 1:]
+                if 'cfg=' in argv or 'c=' in argv:
+                    self._config = sys.argv[1][sys.argv[1].find('=') + 1:]
                     sys.argv.remove(argv)
-                    return config
+                    return self._config
             else:
                 return 'debug'
 
@@ -52,7 +53,7 @@ class CmdLine:
     def settings(self):
         settings_folder = 'local_settings'
         try:
-            import local_settings
+            import_module('local_settings.{config}'.format(config=self.config))
         except ImportError:
             settings_folder = 'settings'
         return '{}.{}'.format(settings_folder, self.config)
