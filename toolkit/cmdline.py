@@ -19,28 +19,39 @@ class CmdLine:
         self._config = None
         self._command = sys.argv[2] if len(sys.argv) >= 3 else 'runserver'
         self._django_cmds = None
+        self._settings = None
 
     @property
     def main(self):
         return self._main
 
-    @property
-    def config(self):
+    def get_config(self):
         if self._config is not None:
             return self._config
         else:
             for argv in sys.argv:
-                if 'cfg=' in argv or 'c=' in argv:
-                    self._config = sys.argv[1][sys.argv[1].find('=') + 1:]
+                # 兼容django自带的settings参数
+                if 'settings=' in argv:
+                    self._settings = argv[argv.find('=') + 1:]
+                    return self._settings
+                # flask、tornado 使用cfg参数
+                # django 也可以使用cfg参数
+                elif 'cfg=' in argv:
+                    self._config = argv[argv.find('=') + 1:]
                     sys.argv.remove(argv)
                     return self._config
             else:
-                return 'debug'
+                return 'default'
+
+    @property
+    def config(self):
+        return self._config or self.get_config()
 
     @property
     def command(self):
         assert self.config
         try:
+            # django 下原样返回
             import django
             return sys.argv
         except ImportError:
@@ -51,12 +62,18 @@ class CmdLine:
 
     @property
     def settings(self):
-        settings_folder = 'local_settings'
-        try:
-            import_module('local_settings.{config}'.format(config=self.config))
-        except ImportError:
-            settings_folder = 'settings'
-        return '{}.{}'.format(settings_folder, self.config)
+        # 获取配置文件名
+        self.get_config()
+        # django的--settings参数直接返回，不支持本地配置文件
+        if self._settings:
+            return self._settings
+        else:
+            settings_folder = 'local_settings'
+            try:
+                import_module('local_settings.{config}'.format(config=self.config))
+            except ImportError:
+                settings_folder = 'settings'
+            return '{}.{}'.format(settings_folder, self.config)
 
 
 cmdline = CmdLine()
