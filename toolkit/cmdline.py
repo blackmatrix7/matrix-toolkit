@@ -31,12 +31,12 @@ class CmdLine:
         else:
             for argv in sys.argv:
                 # 兼容django自带的settings参数
-                if 'settings=' in argv:
+                if 'settings=' in argv.lower():
                     self._settings = argv[argv.find('=') + 1:]
                     return self._settings
                 # flask、tornado 使用cfg参数
                 # django 也可以使用cfg参数
-                elif 'cfg=' in argv:
+                elif 'cfg=' in argv.lower():
                     self._config = argv[argv.find('=') + 1:]
                     sys.argv.remove(argv)
                     return self._config
